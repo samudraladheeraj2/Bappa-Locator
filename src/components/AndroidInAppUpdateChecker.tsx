@@ -5,7 +5,7 @@ export const CURRENT_APP_VERSION = '1.0.0';
 
 // Configurable URL pointing to raw version.json on GitHub or public host
 const VERSION_CHECK_URL =
-  'https://raw.githubusercontent.com/samudraladheeraj/bappa-locator/main/version.json';
+  'https://raw.githubusercontent.com/samudraladheeraj2/Bappa-Locator/main/version.json';
 
 interface VersionInfo {
   latestVersion: string;

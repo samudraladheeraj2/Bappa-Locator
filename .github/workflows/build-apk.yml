@@ -51,8 +51,28 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
+      - name: Extract Version & Rename APK for Release
+        id: release_info
+        run: |
+          VERSION=$(node -p "require('./version.json').latestVersion")
+          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
+          cp android/app/build/outputs/apk/debug/app-debug.apk bappa-locator-v$VERSION.apk
+          echo "FILENAME=bappa-locator-v$VERSION.apk" >> $GITHUB_OUTPUT
+
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug.apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_info.outputs.VERSION }}
+          name: Release ${{ steps.release_info.outputs.VERSION }}
+          body: "Automated compiled APK release for Bappa Locator ${{ steps.release_info.outputs.VERSION }}."
+          draft: false
+          prerelease: false
+          files: ${{ steps.release_info.outputs.FILENAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,7 +1,7 @@
 {
-  "latestVersion": "1.1.0",
-  "versionCode": 2,
-  "apkUrl": "https://github.com/samudraladheeraj/bappa-locator/releases/download/v1.1.0/bappa-locator-v1.1.0.apk",
-  "releaseNotes": "Zero-Flicker Performance & Admin Console Security Update! Resolves all map pin layer flashes, persistent top navigation, and implements strict Admin Phone/PIN authentication.",
+  "latestVersion": "1.1.1",
+  "versionCode": 3,
+  "apkUrl": "https://github.com/samudraladheeraj2/Bappa-Locator/releases/download/v1.1.1/bappa-locator-v1.1.1.apk",
+  "releaseNotes": "Critical Performance Update! Resolves 1-second infinite reloading loops on preview screens, prevents map auto-snapping, and delivers seamless offline PWA integration.",
   "forceUpdate": false
 }

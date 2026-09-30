@@ -4,8 +4,10 @@ import App from './App.tsx';
 import './index.css';
 import { registerSW } from 'virtual:pwa-register';
 
-// Register Service Worker for offline execution & automatic updates
-registerSW({ immediate: true });
+// Register Service Worker for offline execution & automatic updates in production
+if (import.meta.env.PROD) {
+  registerSW({ immediate: true });
+}
 
 interface Props {
   children: ReactNode;
