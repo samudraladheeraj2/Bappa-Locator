@@ -47,24 +47,10 @@ jobs:
           npx cap add android
           npx cap sync android
           
-          # Inject custom cute Bappa launcher icons
-          mkdir -p android/app/src/main/res/drawable android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi
-          cp public/app-icon.jpg android/app/src/main/res/drawable/ic_launcher_background.jpg
-          cp public/icon.png android/app/src/main/res/mipmap-hdpi/ic_launcher.png
-          cp public/icon.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
-          cp public/icon.png android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          cp public/icon.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          cp public/icon.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-          cp public/icon.png android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png
-          cp public/icon.png android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png
-          cp public/icon.png android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png
-          cp public/icon.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
-          cp public/icon.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
-          cp public/icon.png android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
-          cp public/icon.png android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
-          cp public/icon.png android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
-          cp public/icon.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
-          cp public/icon.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+          # Automatically generate all Android launchers & adaptive XML files using official Capacitor Assets Tool
+          mkdir -p assets
+          cp public/icon.png assets/icon.png
+          npx @capacitor/assets generate --android
 
       - name: Setup Persistent Signing Keystore
         run: |
