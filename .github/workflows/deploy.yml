@@ -1,32 +1,13 @@
-name: Unified CI/CD Multi-Platform Build & Deploy
+name: Build Android APK
 
 on:
   push:
-    branches:
-      - main
-      - master
-  pull_request:
-    branches:
-      - main
-      - master
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
-  build-and-test:
-    name: Build Web, PWA & Verify Codebase
+  build-android:
     runs-on: ubuntu-latest
-
-    env:
-      VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-      VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-      VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-      VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-      VITE_FIREBASE_DATABASE_ID: ${{ secrets.VITE_FIREBASE_DATABASE_ID }}
-      VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-      VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      APP_URL: ${{ secrets.APP_URL }}
 
     steps:
       - name: Checkout Repository
@@ -35,47 +16,7 @@ jobs:
       - name: Set up Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-
-      - name: Install Project Dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Strict Type Check & Code Audit
-        run: npm run lint
-
-      - name: Build Production Web Bundle & Service Worker
-        run: npm run build
-
-      - name: Upload Web & PWA Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: bappa-locator-web-dist
-          path: dist
-          retention-days: 14
-
-  build-android-apk:
-    name: Build Android APK Package
-    needs: build-and-test
-    runs-on: ubuntu-latest
-
-    env:
-      VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-      VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-      VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-      VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-      VITE_FIREBASE_DATABASE_ID: ${{ secrets.VITE_FIREBASE_DATABASE_ID }}
-      VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-      VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js Environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
+          node-version: '22'
 
       - name: Set up Java JDK 17
         uses: actions/setup-java@v4
@@ -84,29 +25,34 @@ jobs:
           java-version: '17'
 
       - name: Install Dependencies
-        run: npm install --legacy-peer-deps
+        run: |
+          npm install --legacy-peer-deps
+          npm install @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps
 
-      - name: Build Web Assets for Capacitor
+      - name: Build Production Web Bundle
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
         run: npm run build
 
-      - name: Initialize Capacitor Android (If not present)
+      - name: Initialize & Setup Capacitor Android Platform
         run: |
-          if [ ! -d "android" ]; then
-            npx cap add android
+          if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
+            npx cap init "Bappa Locator" "com.bappalocator.app" --web-dir dist
           fi
+          rm -rf android
+          npx cap add android
+          npx cap sync android
 
-      - name: Sync Web Bundle with Native Android
-        run: npx cap sync android
-
-      - name: Compile Android APK
+      - name: Build Android Debug APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug
 
-      - name: Upload Native Android APK Artifact
+      - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bappa-locator-android-apk
+          name: app-debug.apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 14
