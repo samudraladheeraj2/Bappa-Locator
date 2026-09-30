@@ -23,7 +23,12 @@ const app = initializeApp(firebaseConfig);
 
 // Enable robust Firestore IndexedDB Offline Persistence for offline access
 export const db = (() => {
+  const isIframe = typeof window !== 'undefined' && window.self !== window.top;
   try {
+    if (isIframe) {
+      console.log('Running inside iframe preview: Omit persistentLocalCache to avoid browser storage lock hangs.');
+      return getFirestore(app, env.FIREBASE_DATABASE_ID);
+    }
     return initializeFirestore(app, {
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
