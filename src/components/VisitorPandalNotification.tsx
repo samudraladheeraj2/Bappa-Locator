@@ -61,7 +61,13 @@ export const VisitorPandalNotification: React.FC<VisitorPandalNotificationProps>
     candidates.sort((a, b) => a.distanceMeters - b.distanceMeters);
 
     if (candidates.length > 0) {
-      setNearbyPandal(candidates[0]);
+      const top = candidates[0];
+      setNearbyPandal((prev) => {
+        if (prev && prev.pandal.id === top.pandal.id && prev.distanceMeters === top.distanceMeters) {
+          return prev;
+        }
+        return top;
+      });
     } else {
       setNearbyPandal(null);
     }

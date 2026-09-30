@@ -89,7 +89,12 @@ export const AnnadanamView: React.FC<AnnadanamViewProps> = ({
           ...activeStaticItems.filter((it) => !seenIds.has(it.id)),
         ];
 
-        setAnnadanamList(combined);
+        setAnnadanamList((prev) => {
+          if (JSON.stringify(prev) === JSON.stringify(combined)) {
+            return prev;
+          }
+          return combined;
+        });
         setLoading(false);
       },
       (error) => {

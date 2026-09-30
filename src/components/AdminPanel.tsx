@@ -30,9 +30,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
+  Lock,
 } from 'lucide-react';
 import { Pandal, Annadanam } from '../types';
 import { auth, db, signInWithGoogle, storage } from '../firebase';
+import { ensureAdminExists, checkIsAdminUser, ADMIN_MOBILE, ADMIN_PIN, ADMIN_EMAIL } from '../utils/adminInit';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -304,15 +306,75 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const annadMapRef = useRef<L.Map | null>(null);
   const annadContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const ADMIN_EMAIL = 'samudraladheeraj2@gmail.com';
-  const isAdmin = (user && user.email === ADMIN_EMAIL) || true; // Allow admin access
+  const [adminMobileInput, setAdminMobileInput] = useState('7702583629');
+  const [adminPinInput, setAdminPinInput] = useState('');
+  const [adminAuthError, setAdminAuthError] = useState<string | null>(null);
+  const [isAuthenticatingAdmin, setIsAuthenticatingAdmin] = useState(false);
+  const [authenticatedAdmin, setAuthenticatedAdmin] = useState<boolean>(() => {
+    return checkIsAdminUser(auth.currentUser, null);
+  });
+
+  const isAdmin = authenticatedAdmin || checkIsAdminUser(user, null);
 
   useEffect(() => {
+    const checkState = () => {
+      const isAdm = checkIsAdminUser(auth.currentUser, null);
+      setAuthenticatedAdmin(isAdm);
+    };
+
+    checkState();
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      checkState();
     });
-    return () => unsubscribe();
+
+    const handleAuthChange = () => {
+      checkState();
+    };
+
+    window.addEventListener('bappa_auth_change', handleAuthChange);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('bappa_auth_change', handleAuthChange);
+    };
   }, []);
+
+  const handleAdminLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminAuthError(null);
+
+    const cleanMobile = adminMobileInput.trim();
+    const cleanPin = adminPinInput.trim();
+
+    if (cleanMobile !== ADMIN_MOBILE) {
+      setAdminAuthError(`Access Denied: Mobile ${cleanMobile} is not an authorized Admin.`);
+      return;
+    }
+
+    if (cleanPin !== ADMIN_PIN) {
+      setAdminAuthError('Access Denied: Incorrect 4-digit Admin PIN.');
+      return;
+    }
+
+    setIsAuthenticatingAdmin(true);
+    try {
+      await ensureAdminExists();
+
+      const adminData = { mobile: ADMIN_MOBILE, name: 'Admin (7702583629)' };
+      localStorage.setItem('bappa_mobile_user', JSON.stringify(adminData));
+      window.dispatchEvent(new Event('bappa_auth_change'));
+
+      setAuthenticatedAdmin(true);
+      showToast('Admin Console Unlocked Successfully!', 'success');
+      fetchData();
+    } catch (err: any) {
+      setAdminAuthError('Authentication error: ' + (err.message || 'Failed'));
+    } finally {
+      setIsAuthenticatingAdmin(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -873,6 +935,94 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
 
   const currentPandals = pandals.filter((p) => p.status === statusTab);
   const currentAnnadanam = annadanamList.filter((a) => a.status === statusTab);
+
+  if (!isAdmin) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border-2 border-amber-400 p-6 space-y-5 relative">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100 transition cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-amber-100 text-amber-900 rounded-2xl border border-amber-300">
+              <ShieldAlert className="w-8 h-8 text-amber-800" />
+            </div>
+            <div>
+              <h2 className="text-lg font-extrabold text-amber-950">Restricted Admin Access</h2>
+              <p className="text-xs text-gray-600 font-medium">Authentication required to view Admin Console</p>
+            </div>
+          </div>
+
+          <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-3 text-xs text-amber-900 font-medium leading-relaxed">
+            🔒 The Admin Console is restricted to authorized moderators only. Please sign in with your Admin phone number (7702583629) and 4-digit PIN.
+          </div>
+
+          <form onSubmit={handleAdminLoginSubmit} className="space-y-4">
+            {adminAuthError && (
+              <div className="p-3 bg-red-50 border border-red-200 text-red-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                <span>{adminAuthError}</span>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Admin Mobile Number</label>
+              <div className="relative">
+                <Phone className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
+                <input
+                  type="tel"
+                  maxLength={10}
+                  value={adminMobileInput}
+                  onChange={(e) => setAdminMobileInput(e.target.value.replace(/\D/g, ''))}
+                  placeholder="7702583629"
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">4-Digit Admin PIN</label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
+                <input
+                  type="password"
+                  maxLength={4}
+                  value={adminPinInput}
+                  onChange={(e) => setAdminPinInput(e.target.value.replace(/\D/g, ''))}
+                  placeholder="••••"
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-semibold tracking-widest text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isAuthenticatingAdmin}
+              className="w-full py-3 bg-amber-900 hover:bg-amber-800 text-yellow-300 font-bold text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {isAuthenticatingAdmin ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Authenticating Admin...</span>
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4" />
+                  <span>Unlock Admin Console</span>
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">

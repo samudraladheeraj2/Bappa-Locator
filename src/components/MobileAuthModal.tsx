@@ -202,6 +202,7 @@ export const MobileAuthModal: React.FC<MobileAuthModalProps> = ({ isOpen, onClos
         setSuccessMsg('Admin Login successful!');
         setTimeout(() => {
           onSuccess({ mobile: cleanMobile, name: 'Dheeraj (Admin)' });
+          window.dispatchEvent(new Event('bappa_auth_change'));
           onClose();
         }, 1000);
         return;

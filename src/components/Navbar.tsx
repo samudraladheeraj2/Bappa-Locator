@@ -15,6 +15,7 @@ interface NavbarProps {
   onOpenAnnadanamModal: () => void;
   onOpenAdmin: () => void;
   onOpenProfile: () => void;
+  isAdmin?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -29,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAnnadanamModal,
   onOpenAdmin,
   onOpenProfile,
+  isAdmin = false,
 }) => {
   return (
     <header className="bg-amber-800/95 backdrop-blur-md text-white shadow-xl rounded-2xl border border-amber-600/40 z-50">
@@ -56,15 +58,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="hidden sm:inline">My Profile</span>
           </button>
 
-          {/* Admin Panel Button */}
-          <button
-            onClick={onOpenAdmin}
-            className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-950 text-yellow-300 hover:bg-amber-900 transition-all border border-amber-700/60 shadow-sm"
-            title="Admin Dashboard & Pending Approvals"
-          >
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span className="font-bold">Admin</span>
-          </button>
+          {/* Admin Panel Button — ONLY visible to authenticated Admins */}
+          {isAdmin && (
+            <button
+              onClick={onOpenAdmin}
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-950 text-yellow-300 hover:bg-amber-900 transition-all border border-amber-700/60 shadow-sm animate-in fade-in"
+              title="Admin Dashboard & Pending Approvals"
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span className="font-bold">Admin</span>
+            </button>
+          )}
 
           {/* Install App PWA Button */}
           <PWAInstallButton />

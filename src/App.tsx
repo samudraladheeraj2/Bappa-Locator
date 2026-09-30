@@ -16,8 +16,10 @@ import { VisitorPandalNotification } from './components/VisitorPandalNotificatio
 import { AppUpdaterNotifier } from './components/AppUpdaterNotifier';
 import { AndroidInAppUpdateChecker } from './components/AndroidInAppUpdateChecker';
 import { calculateDistance } from './utils/geo';
-import { db } from './firebase';
+import { db, auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { ensureAdminExists, checkIsAdminUser } from './utils/adminInit';
 
 export default function App() {
   const [pandals, setPandals] = useState<Pandal[]>(() => {
@@ -86,6 +88,39 @@ export default function App() {
   });
   const [showFavoritesOnly, setShowFavoritesOnly] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    return checkIsAdminUser(auth.currentUser, null);
+  });
+
+  // Track Admin authentication state and initialize Admin ID in Firestore
+  useEffect(() => {
+    ensureAdminExists().catch((err) => console.warn('Admin initialization warning:', err));
+
+    const checkAdminState = () => {
+      const isAdm = checkIsAdminUser(auth.currentUser, null);
+      setIsAdmin(isAdm);
+    };
+
+    checkAdminState();
+
+    const unsubscribe = onAuthStateChanged(auth, () => {
+      checkAdminState();
+    });
+
+    const handleAuthChange = () => {
+      checkAdminState();
+    };
+
+    window.addEventListener('storage', handleAuthChange);
+    window.addEventListener('bappa_auth_change', handleAuthChange);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('storage', handleAuthChange);
+      window.removeEventListener('bappa_auth_change', handleAuthChange);
+    };
+  }, []);
 
   // Track online/offline status and wake-up recovery
   useEffect(() => {
@@ -390,130 +425,92 @@ export default function App() {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-gray-50 flex flex-col font-sans select-none relative">
-      {viewMode === 'map' ? (
-        <>
-          {/* 100% Full Viewport Uber Map */}
-          <div className="absolute inset-0 z-0">
-            <MapView
-              pandals={filteredPandals}
-              selectedPandal={selectedPandal}
-              onSelectPandal={setSelectedPandal}
-              userLocation={userLocation}
-              distances={distances}
-              onGetDirections={handleGetDirections}
-              onGetLocation={handleGetLocation}
-              isLocating={isLocating}
-            />
-          </div>
-
-          {/* Floating Top Controls (Uber style) */}
-          <div className="absolute top-2 left-2 right-2 sm:top-3 sm:left-4 sm:right-4 z-30 pointer-events-none flex flex-col items-center">
-            <div className="w-full max-w-3xl pointer-events-auto space-y-2">
-              {!isOnline && (
-                <div className="bg-amber-950/95 text-amber-200 border border-amber-500/50 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between shadow-md backdrop-blur-md">
-                  <div className="flex items-center gap-2">
-                    <WifiOff className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
-                    <span>Offline Mode — Running from local cache</span>
-                  </div>
-                  <span className="text-[10px] bg-amber-800/80 text-amber-100 font-bold px-2 py-0.5 rounded-full">
-                    {pandals.length} Pandals Cached
-                  </span>
-                </div>
-              )}
-              <Navbar
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                onGetLocation={handleGetLocation}
-                onPandalsNearMe={handlePandalsNearMe}
-                onAnnadanamNearMe={handleAnnadanamNearMe}
-                isLocating={isLocating}
-                hasLocation={!!userLocation}
-                onOpenSubmit={() => setIsSubmitModalOpen(true)}
-                onOpenAnnadanamModal={() => setIsAnnadanamModalOpen(true)}
-                onOpenAdmin={() => setIsAdminModalOpen(true)}
-                onOpenProfile={() => setIsProfileModalOpen(true)}
-              />
-              <SearchFilter
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                sortByDistance={sortByDistance}
-                onSortToggle={() => setSortByDistance(!sortByDistance)}
-                hasLocation={!!userLocation}
-                totalCount={pandals.length}
-                filteredCount={filteredPandals.length}
-                showFavoritesOnly={showFavoritesOnly}
-                onFavoritesToggle={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                favoritesCount={favorites.length}
-              />
+      {/* Permanent Header Controls Container */}
+      <div className="z-40 p-2 sm:p-3 space-y-2 max-w-4xl mx-auto w-full shrink-0">
+        {!isOnline && (
+          <div className="bg-amber-950/95 text-amber-200 border border-amber-500/50 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between shadow-md backdrop-blur-md">
+            <div className="flex items-center gap-2">
+              <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>Offline Mode — Running from local cache</span>
             </div>
+            <span className="text-[10px] bg-amber-800/80 text-amber-100 font-bold px-2 py-0.5 rounded-full">
+              {pandals.length} Pandals Cached
+            </span>
           </div>
-        </>
-      ) : (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans overflow-y-auto">
-          <div className="sticky top-0 z-40 p-2 sm:p-3 space-y-2 max-w-4xl mx-auto w-full">
-            {!isOnline && (
-              <div className="bg-amber-950/95 text-amber-200 border border-amber-500/50 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between shadow-md backdrop-blur-md">
-                <div className="flex items-center gap-2">
-                  <WifiOff className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
-                  <span>Offline Mode — Running from local cache</span>
-                </div>
-                <span className="text-[10px] bg-amber-800/80 text-amber-100 font-bold px-2 py-0.5 rounded-full">
-                  {pandals.length} Pandals Cached
-                </span>
-              </div>
-            )}
-            <Navbar
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-              onGetLocation={handleGetLocation}
-              onPandalsNearMe={handlePandalsNearMe}
-              onAnnadanamNearMe={handleAnnadanamNearMe}
-              isLocating={isLocating}
-              hasLocation={!!userLocation}
-              onOpenSubmit={() => setIsSubmitModalOpen(true)}
-              onOpenAnnadanamModal={() => setIsAnnadanamModalOpen(true)}
-              onOpenAdmin={() => setIsAdminModalOpen(true)}
-              onOpenProfile={() => setIsProfileModalOpen(true)}
-            />
-            {viewMode !== 'annadanam' && (
-              <SearchFilter
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                sortByDistance={sortByDistance}
-                onSortToggle={() => setSortByDistance(!sortByDistance)}
-                hasLocation={!!userLocation}
-                totalCount={pandals.length}
-                filteredCount={filteredPandals.length}
-                showFavoritesOnly={showFavoritesOnly}
-                onFavoritesToggle={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                favoritesCount={favorites.length}
-              />
-            )}
-          </div>
+        )}
+        <Navbar
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          onGetLocation={handleGetLocation}
+          onPandalsNearMe={handlePandalsNearMe}
+          onAnnadanamNearMe={handleAnnadanamNearMe}
+          isLocating={isLocating}
+          hasLocation={!!userLocation}
+          onOpenSubmit={() => setIsSubmitModalOpen(true)}
+          onOpenAnnadanamModal={() => setIsAnnadanamModalOpen(true)}
+          onOpenAdmin={() => setIsAdminModalOpen(true)}
+          onOpenProfile={() => setIsProfileModalOpen(true)}
+          isAdmin={isAdmin}
+        />
+        {viewMode !== 'annadanam' && (
+          <SearchFilter
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            sortByDistance={sortByDistance}
+            onSortToggle={() => setSortByDistance(!sortByDistance)}
+            hasLocation={!!userLocation}
+            totalCount={pandals.length}
+            filteredCount={filteredPandals.length}
+            showFavoritesOnly={showFavoritesOnly}
+            onFavoritesToggle={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            favoritesCount={favorites.length}
+          />
+        )}
+      </div>
 
-          <main className="flex-1 max-w-4xl mx-auto w-full px-2 sm:px-4 pb-6">
-            {viewMode === 'list' ? (
-              <PandalList
-                pandals={filteredPandals}
-                distances={distances}
-                onSelectPandal={setSelectedPandal}
-                onGetDirections={handleGetDirections}
-                favorites={favorites}
-                onToggleFavorite={handleToggleFavorite}
-                showFavoritesOnly={showFavoritesOnly}
-                hasLocation={!!userLocation}
-              />
-            ) : (
-              <AnnadanamView
-                onOpenSuggestAnnadanam={() => setIsAnnadanamModalOpen(true)}
-                userLocation={userLocation}
-                onGetLocation={handleAnnadanamNearMe}
-                isLocating={isLocating}
-              />
-            )}
-          </main>
+      {/* Main Viewport Content Area */}
+      <div className="flex-1 w-full relative overflow-hidden">
+        {/* Map View Layer */}
+        <div className={viewMode === 'map' ? 'absolute inset-0 z-0' : 'hidden'}>
+          <MapView
+            pandals={filteredPandals}
+            selectedPandal={selectedPandal}
+            onSelectPandal={setSelectedPandal}
+            userLocation={userLocation}
+            distances={distances}
+            onGetDirections={handleGetDirections}
+            onGetLocation={handleGetLocation}
+            isLocating={isLocating}
+          />
         </div>
-      )}
+
+        {/* List & Annadanam Scrollable Layer */}
+        {viewMode !== 'map' && (
+          <div className="h-full w-full overflow-y-auto pb-24">
+            <main className="max-w-4xl mx-auto w-full px-2 sm:px-4 py-2">
+              {viewMode === 'list' ? (
+                <PandalList
+                  pandals={filteredPandals}
+                  distances={distances}
+                  onSelectPandal={setSelectedPandal}
+                  onGetDirections={handleGetDirections}
+                  favorites={favorites}
+                  onToggleFavorite={handleToggleFavorite}
+                  showFavoritesOnly={showFavoritesOnly}
+                  hasLocation={!!userLocation}
+                />
+              ) : (
+                <AnnadanamView
+                  onOpenSuggestAnnadanam={() => setIsAnnadanamModalOpen(true)}
+                  userLocation={userLocation}
+                  onGetLocation={handleAnnadanamNearMe}
+                  isLocating={isLocating}
+                />
+              )}
+            </main>
+          </div>
+        )}
+      </div>
 
       {/* Pandal Detail Modal */}
       <PandalDetailModal

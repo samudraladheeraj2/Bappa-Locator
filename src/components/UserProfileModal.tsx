@@ -20,6 +20,7 @@ import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/fire
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { MobileAuthModal } from './MobileAuthModal';
 import { compressImageFile, getInstantPreviewUrl } from '../utils/imageCompressor';
+import { checkIsAdminUser } from '../utils/adminInit';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -53,8 +54,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
   const userGaneshaInputRef = useRef<HTMLInputElement | null>(null);
   const userPandalInputRef = useRef<HTMLInputElement | null>(null);
 
-  const ADMIN_EMAIL = 'samudraladheeraj2@gmail.com';
-  const isAdmin = (user && user.email === ADMIN_EMAIL) || (mobileUser && mobileUser.mobile === '7702583629');
+  const isAdmin = checkIsAdminUser(user, mobileUser);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
