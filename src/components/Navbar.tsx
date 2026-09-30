@@ -49,9 +49,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Menu className="w-5 h-5 text-yellow-300" />
           </button>
 
-          <div className="bg-amber-700 p-2 rounded-xl border border-amber-600 shadow-inner flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-yellow-300" />
-          </div>
+          <img
+            src="/src/assets/images/cute_bappa_icon_1790794766056.jpg"
+            alt="Bappa Logo"
+            className="w-10 h-10 rounded-xl object-cover border-2 border-amber-400 shadow-md shrink-0 shadow-amber-950/40"
+            referrerPolicy="no-referrer"
+          />
           <div>
             <h1 className="text-lg font-bold tracking-tight text-yellow-100 flex items-center gap-1.5">
               Bappa Locator 🚩 <span className="text-[10px] bg-amber-900 px-2 py-0.5 rounded text-yellow-200">Hyderabad</span>

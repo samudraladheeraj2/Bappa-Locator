@@ -3,5 +3,5 @@
   "versionCode": 4,
   "apkUrl": "https://github.com/samudraladheeraj2/Bappa-Locator/releases/download/v1.2.0/bappa-locator-v1.2.0.apk",
   "releaseNotes": "Unified single database real-time sync! Instantly syncs pending approvals across mobile and web, dual Phone & Email authentication, and offline support.",
-  "forceUpdate": true
+  "forceUpdate": false
 }
