@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.bappalocator.app',
+  appId: 'com.bappalocator.app.v2',
   appName: 'Bappa Locator',
   webDir: 'dist',
   server: {

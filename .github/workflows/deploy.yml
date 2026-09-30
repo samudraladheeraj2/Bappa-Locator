@@ -39,7 +39,7 @@ jobs:
       - name: Initialize & Setup Capacitor Android Platform
         run: |
           if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
-            npx cap init "Bappa Locator" "com.bappalocator.app" --web-dir dist
+            npx cap init "Bappa Locator" "com.bappalocator.app.v2" --web-dir dist
           fi
           rm -rf android
           npx cap add android
