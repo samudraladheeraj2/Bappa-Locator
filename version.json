@@ -1,7 +1,7 @@
 {
-  "latestVersion": "1.2.2",
-  "versionCode": 6,
-  "apkUrl": "https://github.com/samudraladheeraj2/Bappa-Locator/releases/download/v1.2.2/bappa-locator-v1.2.2.apk",
-  "releaseNotes": "Zero conflict seamless installer with gorgeous cute Bappa launcher icons and cleaned slide drawer views!",
+  "latestVersion": "1.2.3",
+  "versionCode": 7,
+  "apkUrl": "https://github.com/samudraladheeraj2/Bappa-Locator/releases/download/v1.2.3/bappa-locator-v1.2.3.apk",
+  "releaseNotes": "Restored beautiful live in-app update checking and verified high-quality Bappa drawer images inside the app!",
   "forceUpdate": false
 }

@@ -15,9 +15,12 @@ import {
   Layers,
   Clock,
   Compass,
+  RefreshCw,
+  Download,
 } from 'lucide-react';
 import { ViewMode } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
+import { CURRENT_APP_VERSION, checkForAppUpdates } from '../utils/versionCheck';
 
 interface NavigationDrawerProps {
   isOpen: boolean;
@@ -62,6 +65,26 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   onToggleFavoritesOnly,
   isOnline = true,
 }) => {
+  const [checkingUpdate, setCheckingUpdate] = React.useState(false);
+  const [updateResult, setUpdateResult] = React.useState<any>(null);
+  const [upToDateMsg, setUpToDateMsg] = React.useState(false);
+
+  const handleCheckUpdates = async () => {
+    setCheckingUpdate(true);
+    setUpdateResult(null);
+    setUpToDateMsg(false);
+    
+    const result = await checkForAppUpdates();
+    setCheckingUpdate(false);
+    
+    if (result.hasUpdate) {
+      setUpdateResult(result);
+    } else {
+      setUpToDateMsg(true);
+      setTimeout(() => setUpToDateMsg(false), 4000);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -79,7 +102,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
         <div className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white p-4 sm:p-5 flex items-center justify-between border-b border-amber-700/60 shadow-md">
           <div className="flex items-center gap-3">
             <img
-              src="/src/assets/images/cute_bappa_icon_1790794766056.jpg"
+              src="/app-icon.png"
               alt="Cute Bappa Animated Icon"
               className="w-12 h-12 rounded-2xl object-cover border-2 border-amber-300 shadow-md shadow-amber-950/50 shrink-0"
               referrerPolicy="no-referrer"
@@ -351,14 +374,81 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
         </div>
 
         {/* Drawer Footer */}
-        <div className="p-4 bg-amber-100/80 border-t border-amber-200 text-center">
-          <p className="text-xs font-extrabold text-amber-950 flex items-center justify-center gap-1.5">
-            <span>🙏 Ganpati Bappa Morya!</span>
-            <span>🚩</span>
-          </p>
-          <p className="text-[10px] text-amber-800/80 mt-0.5">
-            Community-driven Ganesh Mandapam & Annadanam Finder for Hyderabad
-          </p>
+        <div className="p-4 bg-amber-100/90 border-t border-amber-200 text-center space-y-3.5">
+          {/* Version & Update Checker Panel */}
+          <div className="bg-white/80 border border-amber-200 p-3 rounded-2xl shadow-xs space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold text-amber-950">
+              <span className="bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-200 text-[10px]">
+                App Version: v{CURRENT_APP_VERSION}
+              </span>
+              <button
+                type="button"
+                onClick={handleCheckUpdates}
+                disabled={checkingUpdate}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-800 hover:bg-amber-950 text-white font-bold active:scale-95 transition-all text-[11px] disabled:opacity-60 cursor-pointer shadow-sm shadow-amber-950/20"
+              >
+                <RefreshCw className={`w-3 h-3 ${checkingUpdate ? 'animate-spin' : ''}`} />
+                <span>Check for Updates</span>
+              </button>
+            </div>
+
+            {/* Checker State Renderings */}
+            {checkingUpdate && (
+              <div className="text-[11px] text-amber-800 font-bold flex items-center justify-center gap-1.5 animate-pulse py-1">
+                <span className="w-2.5 h-2.5 border-2 border-amber-800 border-t-transparent rounded-full animate-spin" />
+                <span>Contacting update servers...</span>
+              </div>
+            )}
+
+            {upToDateMsg && (
+              <div className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200 py-1.5 px-3 rounded-xl font-bold text-center animate-bounce">
+                ✨ App is already up to date! (v{CURRENT_APP_VERSION})
+              </div>
+            )}
+
+            {updateResult && updateResult.hasUpdate && (
+              <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-400 p-3 rounded-xl text-left space-y-2 animate-in fade-in zoom-in duration-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-amber-950 flex items-center gap-1">
+                    🚀 New Update Available: v{updateResult.latestVersion}
+                  </span>
+                  <span className="text-[10px] bg-amber-900 text-yellow-100 font-extrabold px-1.5 py-0.5 rounded">
+                    NEW
+                  </span>
+                </div>
+                {updateResult.releaseNotes && (
+                  <p className="text-[10px] text-amber-900 leading-normal font-semibold">
+                    {updateResult.releaseNotes}
+                  </p>
+                )}
+                <a
+                  href={updateResult.apkUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md shadow-emerald-950/20 active:scale-95 transition-all text-center"
+                >
+                  <Download className="w-4 h-4 animate-bounce" />
+                  <span>Download & Install APK</span>
+                </a>
+              </div>
+            )}
+
+            {updateResult && updateResult.error && (
+              <div className="text-[10px] text-rose-700 font-semibold bg-rose-50 border border-rose-200 p-2 rounded-xl text-center">
+                ⚠️ {updateResult.error}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <p className="text-xs font-extrabold text-amber-950 flex items-center justify-center gap-1.5">
+              <span>🙏 Ganpati Bappa Morya!</span>
+              <span>🚩</span>
+            </p>
+            <p className="text-[10px] text-amber-800/80 mt-0.5">
+              Community-driven Ganesh Mandapam & Annadanam Finder for Hyderabad
+            </p>
+          </div>
         </div>
       </div>
     </div>

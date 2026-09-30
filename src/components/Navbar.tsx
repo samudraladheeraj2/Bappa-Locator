@@ -50,7 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <img
-            src="/src/assets/images/cute_bappa_icon_1790794766056.jpg"
+            src="/app-icon.png"
             alt="Bappa Logo"
             className="w-10 h-10 rounded-xl object-cover border-2 border-amber-400 shadow-md shrink-0 shadow-amber-950/40"
             referrerPolicy="no-referrer"
