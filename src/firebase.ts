@@ -1,5 +1,14 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateProfile,
+} from 'firebase/auth';
 import {
   initializeFirestore,
   getFirestore,
@@ -21,12 +30,15 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Enable robust Firestore IndexedDB Offline Persistence for offline access
+// Enable robust Firestore connection with long-polling fallback for nested iframes & Cloud Run
 export const db = (() => {
-  const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+  const isIframe =
+    typeof window !== 'undefined' &&
+    (window.self !== window.top || window.location.hostname.includes('run.app'));
+
   try {
     if (isIframe) {
-      console.log('Running inside iframe preview: using experimentalForceLongPolling for immediate connectivity.');
+      console.log('Connecting Firestore in iframe/preview mode with experimentalForceLongPolling...');
       return initializeFirestore(app, {
         experimentalForceLongPolling: true,
       }, env.FIREBASE_DATABASE_ID);
@@ -39,10 +51,12 @@ export const db = (() => {
       experimentalAutoDetectLongPolling: true,
     }, env.FIREBASE_DATABASE_ID);
   } catch (err) {
-    console.warn('Firestore offline persistence fallback:', err);
-    return initializeFirestore(app, {
-      experimentalAutoDetectLongPolling: true,
-    }, env.FIREBASE_DATABASE_ID);
+    console.warn('Firestore initialize fallback to getFirestore:', err);
+    try {
+      return getFirestore(app, env.FIREBASE_DATABASE_ID);
+    } catch {
+      return getFirestore(app);
+    }
   }
 })();
 
@@ -56,6 +70,39 @@ export async function signInWithGoogle() {
     return result.user;
   } catch (error) {
     console.error('Google sign-in error:', error);
+    throw error;
+  }
+}
+
+export async function loginWithEmail(email: string, pass: string) {
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email.trim(), pass);
+    return cred.user;
+  } catch (error) {
+    console.error('Email sign-in error:', error);
+    throw error;
+  }
+}
+
+export async function registerWithEmail(email: string, pass: string, name?: string) {
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email.trim(), pass);
+    if (name && cred.user) {
+      await updateProfile(cred.user, { displayName: name.trim() });
+    }
+    return cred.user;
+  } catch (error) {
+    console.error('Email registration error:', error);
+    throw error;
+  }
+}
+
+export async function resetPasswordEmail(email: string) {
+  try {
+    await sendPasswordResetEmail(auth, email.trim());
+    return true;
+  } catch (error) {
+    console.error('Password reset email error:', error);
     throw error;
   }
 }

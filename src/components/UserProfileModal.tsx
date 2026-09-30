@@ -20,7 +20,7 @@ import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/fire
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { MobileAuthModal } from './MobileAuthModal';
 import { compressImageFile, getInstantPreviewUrl } from '../utils/imageCompressor';
-import { checkIsAdminUser } from '../utils/adminInit';
+import { checkIsAdminUser, setInMemoryAdmin } from '../utils/adminInit';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -107,10 +107,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
     try {
       await logoutUser();
     } catch (e) {}
-    localStorage.removeItem('bappa_mobile_user');
+    try {
+      localStorage.removeItem('bappa_mobile_user');
+    } catch (e) {}
+    setInMemoryAdmin(false);
     setMobileUser(null);
     setUser(null);
     setMyPandals([]);
+    window.dispatchEvent(new Event('bappa_auth_change'));
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {

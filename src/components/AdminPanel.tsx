@@ -35,6 +35,7 @@ import {
 import { Pandal, Annadanam } from '../types';
 import { auth, db, signInWithGoogle, storage } from '../firebase';
 import { ensureAdminExists, checkIsAdminUser, setInMemoryAdmin, ADMIN_MOBILE, ADMIN_PIN, ADMIN_EMAIL } from '../utils/adminInit';
+import { withTimeout } from '../utils/asyncHelper';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -347,39 +348,58 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     e.preventDefault();
     setAdminAuthError(null);
 
-    const cleanMobile = adminMobileInput.trim();
+    const cleanMobile = adminMobileInput.replace(/\D/g, '').slice(-10);
     const cleanPin = adminPinInput.trim();
 
+    console.log(`[AdminAuth Stage 1/5] Validating credentials format (Mobile: ${cleanMobile}, PIN length: ${cleanPin.length})...`);
+
     if (cleanMobile !== ADMIN_MOBILE) {
+      console.warn(`[AdminAuth Stage 2/5 REJECTED] Mobile ${cleanMobile} is not authorized.`);
       setAdminAuthError(`Access Denied: Mobile ${cleanMobile} is not an authorized Admin.`);
       return;
     }
 
     if (cleanPin !== ADMIN_PIN) {
+      console.warn(`[AdminAuth Stage 2/5 REJECTED] Incorrect PIN entered.`);
       setAdminAuthError('Access Denied: Incorrect 4-digit Admin PIN.');
       return;
     }
 
+    console.log(`[AdminAuth Stage 2/5 PASSED] Credentials match preset Admin.`);
     setIsAuthenticatingAdmin(true);
+
     try {
-      setInMemoryAdmin(true);
-      setAuthenticatedAdmin(true);
+      await withTimeout(
+        (async () => {
+          console.log(`[AdminAuth Stage 3/5] Activating in-memory Admin session...`);
+          setInMemoryAdmin(true);
+          setAuthenticatedAdmin(true);
 
-      const adminData = { mobile: ADMIN_MOBILE, name: 'Admin (7702583629)' };
-      try {
-        localStorage.setItem('bappa_mobile_user', JSON.stringify(adminData));
-      } catch (storageErr) {
-        console.warn('LocalStorage unavailable in iframe context, using memory state:', storageErr);
-      }
-      window.dispatchEvent(new Event('bappa_auth_change'));
+          console.log(`[AdminAuth Stage 4/5] Storing session in LocalStorage (with iframe fallback)...`);
+          const adminData = { mobile: ADMIN_MOBILE, name: 'Admin (7702583629)' };
+          try {
+            localStorage.setItem('bappa_mobile_user', JSON.stringify(adminData));
+          } catch (storageErr) {
+            console.warn('[AdminAuth Stage 4/5] LocalStorage unavailable in iframe context, using memory session:', storageErr);
+          }
+          window.dispatchEvent(new Event('bappa_auth_change'));
 
-      showToast('Admin Console Unlocked Successfully!', 'success');
-      fetchData();
+          console.log(`[AdminAuth Stage 5/5] Unlocking Admin Console UI & refreshing records...`);
+          showToast('Admin Console Unlocked Successfully!', 'success');
+          fetchData();
 
-      // Ensure Firestore admin document exists asynchronously without blocking the user
-      ensureAdminExists().catch((err) => console.warn('Background admin init note:', err));
+          // Ensure Firestore admin document exists asynchronously in background
+          ensureAdminExists()
+            .then(() => console.log('[AdminAuth SUCCESS] Admin document confirmed in Firestore.'))
+            .catch((err) => console.warn('[AdminAuth NOTICE] Firestore background sync notice:', err));
+        })(),
+        7000,
+        'Admin login timed out after 7 seconds. Please verify your connection.'
+      );
     } catch (err: any) {
-      setAdminAuthError('Authentication error: ' + (err.message || 'Failed'));
+      console.error('[AdminAuth ERROR]', err);
+      setAdminAuthError(err.message || 'Authentication failed. Please try again.');
+      showToast(err.message || 'Login failed. Please try again.', 'error');
     } finally {
       setIsAuthenticatingAdmin(false);
     }

@@ -98,18 +98,24 @@ function sha256Fallback(ascii: string): string {
   return result;
 }
 
+export function syncHashPin(pin: string): string {
+  const salt = 'bappalocator_secure_salt_2026_hyd';
+  return sha256Fallback(pin + salt);
+}
+
 export async function hashPin(pin: string): Promise<string> {
   const salt = 'bappalocator_secure_salt_2026_hyd';
   
   try {
-    if (typeof crypto !== 'undefined' && crypto.subtle) {
+    const isSecure = typeof window !== 'undefined' ? window.isSecureContext : true;
+    if (isSecure && typeof crypto !== 'undefined' && crypto.subtle && typeof TextEncoder !== 'undefined') {
       const msgBuffer = new TextEncoder().encode(pin + salt);
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
     }
   } catch (err) {
-    console.warn('Crypto subtle not supported, falling back to pure JS hash:', err);
+    console.warn('Native crypto subtle unavailable in current context, using pure JS fallback:', err);
   }
 
   return sha256Fallback(pin + salt);

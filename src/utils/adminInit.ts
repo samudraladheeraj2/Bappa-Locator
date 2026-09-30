@@ -1,6 +1,7 @@
 import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { hashPin } from './crypto';
+import { hashPin, syncHashPin } from './crypto';
+import { withTimeout } from './asyncHelper';
 
 export const ADMIN_MOBILE = '7702583629';
 export const ADMIN_PIN = '0796';
@@ -11,43 +12,53 @@ export const ADMIN_EMAIL = 'samudraladheeraj2@gmail.com';
  * and hashed PIN 0796. If not present, creates it automatically.
  */
 export async function ensureAdminExists(): Promise<boolean> {
+  console.log(`[AdminInit] Verifying Admin doc (${ADMIN_MOBILE}) in Firestore...`);
   try {
-    const userRef = doc(db, 'users', ADMIN_MOBILE);
-    const userSnap = await getDoc(userRef);
-    const expectedPinHash = await hashPin(ADMIN_PIN);
+    return await withTimeout(
+      (async () => {
+        const userRef = doc(db, 'users', ADMIN_MOBILE);
+        const userSnap = await getDoc(userRef);
+        const expectedPinHash = syncHashPin(ADMIN_PIN);
 
-    if (!userSnap.exists()) {
-      await setDoc(userRef, {
-        mobile: ADMIN_MOBILE,
-        pinHash: expectedPinHash,
-        role: 'admin',
-        isAdmin: true,
-        displayName: 'Admin (7702583629)',
-        createdAt: new Date().toISOString(),
-      });
-      console.log(`Admin ID (${ADMIN_MOBILE}) initialized in Firestore successfully.`);
-      return true;
-    } else {
-      const data = userSnap.data();
-      // Ensure pinHash and admin privileges are up-to-date
-      if (!data.isAdmin || data.role !== 'admin' || data.pinHash !== expectedPinHash) {
-        await setDoc(
-          userRef,
-          {
+        if (!userSnap.exists()) {
+          console.log(`[AdminInit] Admin doc does not exist yet. Creating doc for ${ADMIN_MOBILE}...`);
+          await setDoc(userRef, {
             mobile: ADMIN_MOBILE,
             pinHash: expectedPinHash,
             role: 'admin',
             isAdmin: true,
-            displayName: data.displayName || 'Admin (7702583629)',
-          },
-          { merge: true }
-        );
-        console.log(`Admin ID (${ADMIN_MOBILE}) privileges updated in Firestore.`);
-      }
-      return true;
-    }
+            displayName: 'Admin (7702583629)',
+            createdAt: new Date().toISOString(),
+          });
+          console.log(`[AdminInit SUCCESS] Admin ID (${ADMIN_MOBILE}) created in Firestore.`);
+          return true;
+        } else {
+          const data = userSnap.data();
+          if (!data.isAdmin || data.role !== 'admin' || data.pinHash !== expectedPinHash) {
+            console.log(`[AdminInit] Updating Admin privileges/hash in Firestore for ${ADMIN_MOBILE}...`);
+            await setDoc(
+              userRef,
+              {
+                mobile: ADMIN_MOBILE,
+                pinHash: expectedPinHash,
+                role: 'admin',
+                isAdmin: true,
+                displayName: data.displayName || 'Admin (7702583629)',
+              },
+              { merge: true }
+            );
+            console.log(`[AdminInit SUCCESS] Admin ID (${ADMIN_MOBILE}) privileges updated.`);
+          } else {
+            console.log(`[AdminInit SUCCESS] Admin ID (${ADMIN_MOBILE}) already up to date.`);
+          }
+          return true;
+        }
+      })(),
+      5000,
+      'Admin Firestore verification timed out after 5s'
+    );
   } catch (err) {
-    console.warn('Admin account initialization notice:', err);
+    console.warn('[AdminInit NOTICE] Firestore Admin sync notice (non-fatal):', err);
     return false;
   }
 }
