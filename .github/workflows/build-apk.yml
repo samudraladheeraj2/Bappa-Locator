@@ -36,9 +36,13 @@ jobs:
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
         run: npm run build
 
-      - name: Add Android Platform & Sync
+      - name: Initialize & Setup Capacitor Android Platform
         run: |
-          npx cap add android || true
+          if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
+            npx cap init "Bappa Locator" "com.bappalocator.app" --web-dir dist
+          fi
+          rm -rf android
+          npx cap add android
           npx cap sync android
 
       - name: Build Android Debug APK
