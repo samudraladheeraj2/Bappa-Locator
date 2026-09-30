@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Navigation, List, Map as MapIcon, Sparkles, PlusCircle, ShieldAlert, Utensils, User as UserIcon } from 'lucide-react';
+import { Menu, MapPin, Navigation, List, Map as MapIcon, Sparkles, PlusCircle, ShieldAlert, Utensils, User as UserIcon } from 'lucide-react';
 import { ViewMode } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -15,6 +15,7 @@ interface NavbarProps {
   onOpenAnnadanamModal: () => void;
   onOpenAdmin: () => void;
   onOpenProfile: () => void;
+  onOpenDrawer: () => void;
   isAdmin?: boolean;
 }
 
@@ -30,12 +31,24 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAnnadanamModal,
   onOpenAdmin,
   onOpenProfile,
+  onOpenDrawer,
   isAdmin = false,
 }) => {
   return (
     <header className="bg-amber-800/95 backdrop-blur-md text-white shadow-xl rounded-2xl border border-amber-600/40 z-50">
       <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center space-x-2">
+          {/* 3-Bar Menu Hamburger Button on Top-Left */}
+          <button
+            type="button"
+            onClick={onOpenDrawer}
+            className="p-2 rounded-xl bg-amber-950/70 hover:bg-amber-700 text-yellow-300 border border-amber-600/50 shadow-sm active:scale-95 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+            title="Open Main Menu & Check Updates"
+            aria-label="Open 3-bar menu"
+          >
+            <Menu className="w-5 h-5 text-yellow-300" />
+          </button>
+
           <div className="bg-amber-700 p-2 rounded-xl border border-amber-600 shadow-inner flex items-center justify-center">
             <Sparkles className="w-6 h-6 text-yellow-300" />
           </div>

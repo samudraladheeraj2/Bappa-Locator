@@ -1,61 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Download, Sparkles, X, ShieldAlert, Smartphone, ExternalLink } from 'lucide-react';
-
-export const CURRENT_APP_VERSION = '1.2.0';
-
-// Configurable URL pointing to raw version.json on GitHub or public host
-const VERSION_CHECK_URL =
-  'https://raw.githubusercontent.com/samudraladheeraj2/Bappa-Locator/main/version.json';
-
-interface VersionInfo {
-  latestVersion: string;
-  versionCode?: number;
-  apkUrl: string;
-  releaseNotes?: string;
-  forceUpdate?: boolean;
-}
-
-function parseSemver(v: string): number[] {
-  return v.replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0);
-}
-
-function isVersionNewer(latest: string, current: string): boolean {
-  const [lMaj = 0, lMin = 0, lPat = 0] = parseSemver(latest);
-  const [cMaj = 0, cMin = 0, cPat = 0] = parseSemver(current);
-
-  if (lMaj !== cMaj) return lMaj > cMaj;
-  if (lMin !== cMin) return lMin > cMin;
-  return lPat > cPat;
-}
+import { Download, Sparkles, X, Smartphone, ExternalLink } from 'lucide-react';
+import { CURRENT_APP_VERSION, checkForAppUpdates, VersionCheckResult } from '../utils/versionCheck';
 
 export const AndroidInAppUpdateChecker: React.FC = () => {
-  const [updateInfo, setUpdateInfo] = useState<VersionInfo | null>(null);
+  const [updateInfo, setUpdateInfo] = useState<VersionCheckResult | null>(null);
   const [showModal, setShowPromptModal] = useState(false);
 
   useEffect(() => {
     const checkVersion = async () => {
-      try {
-        // Try fetching from GitHub raw URL first, fallback to local /version.json
-        let res: Response | null = null;
-        try {
-          res = await fetch(VERSION_CHECK_URL, { cache: 'no-cache' });
-        } catch {
-          res = null;
-        }
-
-        if (!res || !res.ok) {
-          res = await fetch('/version.json', { cache: 'no-cache' });
-        }
-
-        if (res && res.ok) {
-          const data: VersionInfo = await res.json();
-          if (data && data.latestVersion && isVersionNewer(data.latestVersion, CURRENT_APP_VERSION)) {
-            setUpdateInfo(data);
-            setShowPromptModal(true);
-          }
-        }
-      } catch (err) {
-        console.warn('Android version check note:', err);
+      const res = await checkForAppUpdates();
+      if (res.hasUpdate) {
+        setUpdateInfo(res);
+        setShowPromptModal(true);
       }
     };
 

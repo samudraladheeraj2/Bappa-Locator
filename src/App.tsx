@@ -15,6 +15,7 @@ import { UserProfileModal } from './components/UserProfileModal';
 import { VisitorPandalNotification } from './components/VisitorPandalNotification';
 import { AppUpdaterNotifier } from './components/AppUpdaterNotifier';
 import { AndroidInAppUpdateChecker } from './components/AndroidInAppUpdateChecker';
+import { NavigationDrawer } from './components/NavigationDrawer';
 import { calculateDistance } from './utils/geo';
 import { db, auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -86,6 +87,7 @@ export default function App() {
       return false;
     }
   });
+  const [isNavigationDrawerOpen, setIsNavigationDrawerOpen] = useState<boolean>(false);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
 
@@ -450,6 +452,7 @@ export default function App() {
           onOpenAnnadanamModal={() => setIsAnnadanamModalOpen(true)}
           onOpenAdmin={() => setIsAdminModalOpen(true)}
           onOpenProfile={() => setIsProfileModalOpen(true)}
+          onOpenDrawer={() => setIsNavigationDrawerOpen(true)}
           isAdmin={isAdmin}
         />
         {viewMode !== 'annadanam' && (
@@ -566,6 +569,29 @@ export default function App() {
 
       {/* Android In-App APK Update Checker */}
       <AndroidInAppUpdateChecker />
+
+      {/* 3-Bar Slide-over Drawer with Details & Dedicated Update Checker */}
+      <NavigationDrawer
+        isOpen={isNavigationDrawerOpen}
+        onClose={() => setIsNavigationDrawerOpen(false)}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        onGetLocation={handleGetLocation}
+        onPandalsNearMe={handlePandalsNearMe}
+        onAnnadanamNearMe={handleAnnadanamNearMe}
+        isLocating={isLocating}
+        hasLocation={!!userLocation}
+        onOpenSubmit={() => setIsSubmitModalOpen(true)}
+        onOpenAnnadanamModal={() => setIsAnnadanamModalOpen(true)}
+        onOpenAdmin={() => setIsAdminModalOpen(true)}
+        onOpenProfile={() => setIsProfileModalOpen(true)}
+        isAdmin={isAdmin}
+        totalPandals={pandals.length}
+        favoritesCount={favorites.length}
+        showFavoritesOnly={showFavoritesOnly}
+        onToggleFavoritesOnly={() => setShowFavoritesOnly(!showFavoritesOnly)}
+        isOnline={isOnline}
+      />
     </div>
   );
 }
