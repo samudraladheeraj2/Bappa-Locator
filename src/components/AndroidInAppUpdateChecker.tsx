@@ -98,6 +98,18 @@ export const AndroidInAppUpdateChecker: React.FC = () => {
             <ExternalLink className="w-3.5 h-3.5 text-yellow-200" />
           </button>
         </div>
+
+        <div className="text-center pt-1">
+          <a
+            href="https://github.com/samudraladheeraj2/Bappa-Locator/releases"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] text-amber-800 hover:text-amber-950 font-bold underline inline-flex items-center gap-1"
+          >
+            <span>GitHub Releases & Downloads Page</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
       </div>
     </div>
   );
