@@ -538,6 +538,10 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
                           </>
                         )}
                       </button>
+
+                      <div className="p-2.5 bg-amber-100/80 rounded-xl border border-amber-300/80 text-[11px] text-amber-950 leading-tight">
+                        💡 <strong>Note:</strong> If your phone says <em>"Package conflicts with an existing package"</em>, uninstall the previous version from your phone once, then install this update.
+                      </div>
                     </div>
                   </div>
                 ) : (

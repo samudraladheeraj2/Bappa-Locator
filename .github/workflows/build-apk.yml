@@ -47,6 +47,13 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: Setup Persistent Signing Keystore
+        run: |
+          mkdir -p ~/.android
+          if [ -f "signing/debug.keystore" ]; then
+            cp signing/debug.keystore ~/.android/debug.keystore
+          fi
+
       - name: Build Android Debug APK
         run: |
           cd android

@@ -77,6 +77,10 @@ export const AndroidInAppUpdateChecker: React.FC = () => {
           Tap <strong>Download & Install APK</strong> below to download the latest APK file and update your app.
         </p>
 
+        <div className="p-2.5 bg-amber-50/90 rounded-xl border border-amber-200/80 text-[11px] text-amber-900 leading-tight">
+          💡 <strong>Tip:</strong> If Android says <em>"Package conflicts with an existing package"</em>, uninstall the previous version from your phone once, then install the new APK.
+        </div>
+
         <div className="flex items-center gap-2 pt-1">
           {!updateInfo.forceUpdate && (
             <button
