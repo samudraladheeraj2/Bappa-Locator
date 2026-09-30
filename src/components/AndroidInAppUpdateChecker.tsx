@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Download, Sparkles, X, ShieldAlert, Smartphone, ExternalLink } from 'lucide-react';
 
-export const CURRENT_APP_VERSION = '1.0.0';
+export const CURRENT_APP_VERSION = '1.2.0';
 
 // Configurable URL pointing to raw version.json on GitHub or public host
 const VERSION_CHECK_URL =
