@@ -52,6 +52,12 @@ export async function ensureAdminExists(): Promise<boolean> {
   }
 }
 
+let inMemoryAdminState = false;
+
+export function setInMemoryAdmin(isAdmin: boolean) {
+  inMemoryAdminState = isAdmin;
+}
+
 /**
  * Helper to check if a given user/mobile represents the Admin.
  */
@@ -59,6 +65,7 @@ export function checkIsAdminUser(
   user?: { email?: string | null } | null,
   mobileUser?: { mobile?: string } | null
 ): boolean {
+  if (inMemoryAdminState) return true;
   if (user && user.email === ADMIN_EMAIL) return true;
   if (mobileUser && mobileUser.mobile === ADMIN_MOBILE) return true;
 

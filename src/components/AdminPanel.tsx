@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { Pandal, Annadanam } from '../types';
 import { auth, db, signInWithGoogle, storage } from '../firebase';
-import { ensureAdminExists, checkIsAdminUser, ADMIN_MOBILE, ADMIN_PIN, ADMIN_EMAIL } from '../utils/adminInit';
+import { ensureAdminExists, checkIsAdminUser, setInMemoryAdmin, ADMIN_MOBILE, ADMIN_PIN, ADMIN_EMAIL } from '../utils/adminInit';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -319,7 +319,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   useEffect(() => {
     const checkState = () => {
       const isAdm = checkIsAdminUser(auth.currentUser, null);
-      setAuthenticatedAdmin(isAdm);
+      if (isAdm) {
+        setAuthenticatedAdmin(true);
+      }
     };
 
     checkState();
@@ -360,15 +362,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
 
     setIsAuthenticatingAdmin(true);
     try {
-      await ensureAdminExists();
+      setInMemoryAdmin(true);
+      setAuthenticatedAdmin(true);
 
       const adminData = { mobile: ADMIN_MOBILE, name: 'Admin (7702583629)' };
-      localStorage.setItem('bappa_mobile_user', JSON.stringify(adminData));
+      try {
+        localStorage.setItem('bappa_mobile_user', JSON.stringify(adminData));
+      } catch (storageErr) {
+        console.warn('LocalStorage unavailable in iframe context, using memory state:', storageErr);
+      }
       window.dispatchEvent(new Event('bappa_auth_change'));
 
-      setAuthenticatedAdmin(true);
       showToast('Admin Console Unlocked Successfully!', 'success');
       fetchData();
+
+      // Ensure Firestore admin document exists asynchronously without blocking the user
+      ensureAdminExists().catch((err) => console.warn('Background admin init note:', err));
     } catch (err: any) {
       setAdminAuthError('Authentication error: ' + (err.message || 'Failed'));
     } finally {

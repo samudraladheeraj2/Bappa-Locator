@@ -26,18 +26,23 @@ export const db = (() => {
   const isIframe = typeof window !== 'undefined' && window.self !== window.top;
   try {
     if (isIframe) {
-      console.log('Running inside iframe preview: Omit persistentLocalCache to avoid browser storage lock hangs.');
-      return initializeFirestore(app, {}, env.FIREBASE_DATABASE_ID);
+      console.log('Running inside iframe preview: using experimentalForceLongPolling for immediate connectivity.');
+      return initializeFirestore(app, {
+        experimentalForceLongPolling: true,
+      }, env.FIREBASE_DATABASE_ID);
     }
     return initializeFirestore(app, {
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
         cacheSizeBytes: CACHE_SIZE_UNLIMITED,
       }),
+      experimentalAutoDetectLongPolling: true,
     }, env.FIREBASE_DATABASE_ID);
   } catch (err) {
     console.warn('Firestore offline persistence fallback:', err);
-    return initializeFirestore(app, {}, env.FIREBASE_DATABASE_ID);
+    return initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true,
+    }, env.FIREBASE_DATABASE_ID);
   }
 })();
 

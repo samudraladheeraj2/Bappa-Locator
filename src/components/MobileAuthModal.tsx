@@ -3,6 +3,7 @@ import { X, Phone, Lock, CheckCircle2, AlertCircle, ShieldCheck, ArrowLeft, KeyR
 import { db } from '../firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { hashPin } from '../utils/crypto';
+import { setInMemoryAdmin } from '../utils/adminInit';
 
 interface MobileAuthModalProps {
   isOpen: boolean;
@@ -186,17 +187,19 @@ export const MobileAuthModal: React.FC<MobileAuthModalProps> = ({ isOpen, onClos
     try {
       // Special check for preset Admin credentials (7702583629 / 0796)
       if (cleanMobile === '7702583629' && pin === '0796') {
-        // Ensure admin user doc exists
+        setInMemoryAdmin(true);
+        // Ensure admin user doc exists in background
         const userRef = doc(db, 'users', cleanMobile);
-        const pinHash = await hashPin('0796');
-        await setDoc(userRef, {
-          mobile: cleanMobile,
-          pinHash,
-          role: 'admin',
-          isAdmin: true,
-          displayName: 'Dheeraj (Admin)',
-          createdAt: new Date().toISOString(),
-        }, { merge: true });
+        hashPin('0796').then((pinHash) => {
+          setDoc(userRef, {
+            mobile: cleanMobile,
+            pinHash,
+            role: 'admin',
+            isAdmin: true,
+            displayName: 'Dheeraj (Admin)',
+            createdAt: new Date().toISOString(),
+          }, { merge: true }).catch((e) => console.warn('Background admin doc sync note:', e));
+        }).catch(() => {});
 
         setLoading(false);
         setSuccessMsg('Admin Login successful!');
@@ -204,7 +207,7 @@ export const MobileAuthModal: React.FC<MobileAuthModalProps> = ({ isOpen, onClos
           onSuccess({ mobile: cleanMobile, name: 'Dheeraj (Admin)' });
           window.dispatchEvent(new Event('bappa_auth_change'));
           onClose();
-        }, 1000);
+        }, 800);
         return;
       }
 
