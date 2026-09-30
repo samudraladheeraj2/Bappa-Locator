@@ -84,6 +84,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
     }
   };
 
+  const isNativeApp = !!(window as any).Capacitor || navigator.userAgent.toLowerCase().includes('android');
+
   if (!isOpen) return null;
 
   const handleLogin = async () => {
@@ -244,21 +246,28 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
             <p className="text-sm text-gray-600 max-w-sm">
               Sign in with Google or Mobile Number & 4-digit PIN to view your profile and manage your pandals.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm justify-center pt-2">
-              <button
-                onClick={handleLogin}
-                className="flex-1 flex items-center justify-center space-x-2 bg-amber-700 hover:bg-amber-800 text-white px-4 py-3 rounded-xl font-bold shadow-md text-xs transition-all cursor-pointer"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Google Sign In</span>
-              </button>
+            <div className="flex flex-col gap-3 w-full max-w-sm justify-center pt-2">
+              {!isNativeApp && (
+                <button
+                  onClick={handleLogin}
+                  className="w-full flex items-center justify-center space-x-2 bg-amber-700 hover:bg-amber-800 text-white px-4 py-3 rounded-xl font-bold shadow-md text-xs transition-all cursor-pointer"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Google Sign In</span>
+                </button>
+              )}
               <button
                 onClick={() => setIsMobileModalOpen(true)}
-                className="flex-1 flex items-center justify-center space-x-2 bg-amber-900 hover:bg-amber-950 text-white px-4 py-3 rounded-xl font-bold shadow-md text-xs transition-all cursor-pointer"
+                className="w-full flex items-center justify-center space-x-2 bg-amber-900 hover:bg-amber-950 text-white px-4 py-3 rounded-xl font-bold shadow-md text-xs transition-all cursor-pointer"
               >
                 <Phone className="w-4 h-4" />
                 <span>Mobile Login / Signup</span>
               </button>
+              {isNativeApp && (
+                <p className="text-[11px] text-gray-500 font-medium leading-relaxed">
+                  💡 Note: Google Sign-In is only supported on the Web version. Please use the secure Mobile Login above.
+                </p>
+              )}
             </div>
           </div>
         ) : (
