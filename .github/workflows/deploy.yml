@@ -38,7 +38,7 @@ jobs:
           node-version: 20
 
       - name: Install Project Dependencies
-        run: npm ci || npm install
+        run: npm install --legacy-peer-deps
 
       - name: Strict Type Check & Code Audit
         run: npm run lint
