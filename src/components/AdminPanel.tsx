@@ -36,7 +36,7 @@ import { Pandal, Annadanam } from '../types';
 import { auth, db, signInWithGoogle, storage } from '../firebase';
 import { ensureAdminExists, checkIsAdminUser, setInMemoryAdmin, ADMIN_MOBILE, ADMIN_PIN, ADMIN_EMAIL } from '../utils/adminInit';
 import { withTimeout } from '../utils/asyncHelper';
-import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import L from 'leaflet';
@@ -453,10 +453,48 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   };
 
   useEffect(() => {
-    if (isOpen) {
-      fetchData();
-    }
-  }, [isOpen, user]);
+    if (!isOpen) return;
+
+    setLoading(true);
+    console.log('[AdminPanel] Initializing real-time Firestore listeners for single database...');
+
+    // 1. Real-time Submissions stream (All pending, approved, and rejected pandals)
+    const unsubSubmissions = onSnapshot(
+      collection(db, 'submissions'),
+      (snap) => {
+        const items: any[] = snap.docs.map((docSnap) => ({ ...docSnap.data(), id: docSnap.id }));
+        items.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        console.log(`[AdminPanel RealTime] Received ${items.length} submissions from Firestore.`);
+        setPandals(items);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('[AdminPanel RealTime ERROR] Submissions stream:', err);
+        setErrorMsg('Error syncing real-time submissions: ' + err.message);
+        setLoading(false);
+      }
+    );
+
+    // 2. Real-time Annadanam stream
+    const unsubAnnadanam = onSnapshot(
+      collection(db, 'annadanam'),
+      (snap) => {
+        const items: any[] = snap.docs.map((docSnap) => ({ ...docSnap.data(), id: docSnap.id }));
+        items.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        console.log(`[AdminPanel RealTime] Received ${items.length} annadanam from Firestore.`);
+        const activeAnnadanam = items.filter((item: any) => !isAnnadanamExpired(item.date, item.createdAt));
+        setAnnadanamList(activeAnnadanam);
+      },
+      (err) => {
+        console.warn('[AdminPanel RealTime ERROR] Annadanam stream:', err);
+      }
+    );
+
+    return () => {
+      unsubSubmissions();
+      unsubAnnadanam();
+    };
+  }, [isOpen, isAdmin]);
 
   // Initialize Pandal Edit Map
   useEffect(() => {

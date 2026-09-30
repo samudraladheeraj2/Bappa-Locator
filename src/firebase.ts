@@ -30,25 +30,14 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Enable robust Firestore connection with long-polling fallback for nested iframes & Cloud Run
+// Enable robust Firestore connection with long-polling fallback for web & Cloud Run
 export const db = (() => {
-  const isIframe =
-    typeof window !== 'undefined' &&
-    (window.self !== window.top || window.location.hostname.includes('run.app'));
+  const isWebOrIframe = typeof window !== 'undefined';
 
   try {
-    if (isIframe) {
-      console.log('Connecting Firestore in iframe/preview mode with experimentalForceLongPolling...');
-      return initializeFirestore(app, {
-        experimentalForceLongPolling: true,
-      }, env.FIREBASE_DATABASE_ID);
-    }
+    console.log('Connecting Firestore to single database:', env.FIREBASE_DATABASE_ID);
     return initializeFirestore(app, {
-      localCache: persistentLocalCache({
-        tabManager: persistentMultipleTabManager(),
-        cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-      }),
-      experimentalAutoDetectLongPolling: true,
+      experimentalForceLongPolling: isWebOrIframe,
     }, env.FIREBASE_DATABASE_ID);
   } catch (err) {
     console.warn('Firestore initialize fallback to getFirestore:', err);
