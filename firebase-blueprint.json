@@ -1,0 +1,79 @@
+{
+  "entities": {
+    "Submission": {
+      "title": "Submission",
+      "description": "User-submitted Ganesh pandal awaiting approval",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "address": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 300
+        },
+        "area": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "city": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 50
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "timings": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "image": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"]
+        },
+        "submittedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "submittedByEmail": {
+          "type": "string",
+          "maxLength": 150
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "name", "address", "area", "city", "latitude", "longitude", "status", "submittedBy", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/submissions/{submissionId}": {
+      "schema": {
+        "$ref": "Submission"
+      },
+      "description": "User submissions for new pandals"
+    }
+  }
+}

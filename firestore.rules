@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'samudraladheeraj2@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOwner(submittedBy) {
+      return (isSignedIn() && submittedBy == request.auth.uid) ||
+             (submittedBy is string && (
+               (submittedBy.size() > 4 && submittedBy.matches('^mob_[0-9]+$')) ||
+               (submittedBy.size() > 4 && submittedBy.matches('^(anon|sub|guest)_[a-zA-Z0-9_\\-]+$')) ||
+               submittedBy == 'anonymous'
+             ));
+    }
+
+    function isValidSubmission(data) {
+      return data.keys().hasAll(['id', 'name', 'address', 'area', 'city', 'latitude', 'longitude', 'status', 'submittedBy', 'createdAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() >= 2 && data.name.size() <= 100 &&
+             data.address is string && data.address.size() >= 5 && data.address.size() <= 300 &&
+             data.area is string && data.area.size() >= 2 && data.area.size() <= 100 &&
+             data.city is string && data.city.size() >= 2 && data.city.size() <= 50 &&
+             data.latitude is number && data.longitude is number &&
+             (data.status == 'pending' || data.status == 'approved' || data.status == 'rejected') &&
+             data.submittedBy is string &&
+             data.createdAt is string;
+    }
+
+    function isValidAnnadanam(data) {
+      return data.keys().hasAll(['id', 'pandalName', 'date', 'startTime', 'endTime', 'address', 'area', 'status', 'submittedBy', 'createdAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.pandalName is string && data.pandalName.size() >= 2 && data.pandalName.size() <= 100 &&
+             data.address is string && data.address.size() >= 5 && data.address.size() <= 300 &&
+             data.area is string && data.area.size() >= 2 && data.area.size() <= 100 &&
+             (data.status == 'pending' || data.status == 'approved' || data.status == 'rejected') &&
+             data.submittedBy is string &&
+             data.createdAt is string;
+    }
+
+    match /submissions/{submissionId} {
+      allow read: if true;
+      allow create: if isValidSubmission(incoming()) && (incoming().status == 'pending' || isAdmin());
+      allow update: if isAdmin() || (
+        isValidSubmission(incoming()) &&
+        incoming().status == existing().status &&
+        incoming().submittedBy == existing().submittedBy
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /annadanam/{annadanamId} {
+      allow read: if true;
+      allow create: if isValidAnnadanam(incoming()) && (incoming().status == 'pending' || isAdmin());
+      allow update: if isAdmin() || (
+        isValidAnnadanam(incoming()) &&
+        incoming().status == existing().status &&
+        incoming().submittedBy == existing().submittedBy
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAdmin();
+    }
+
+    match /otps/{otpId} {
+      allow read, write: if true;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

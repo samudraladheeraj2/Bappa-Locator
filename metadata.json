@@ -1,0 +1,9 @@
+{
+  "name": "Bappa Locator",
+  "description": "Discover Ganesh pandals, view locations on map, search by area, and get accurate directions.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": []
+}
+
