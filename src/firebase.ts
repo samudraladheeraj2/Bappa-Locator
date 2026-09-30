@@ -27,7 +27,7 @@ export const db = (() => {
   try {
     if (isIframe) {
       console.log('Running inside iframe preview: Omit persistentLocalCache to avoid browser storage lock hangs.');
-      return getFirestore(app, env.FIREBASE_DATABASE_ID);
+      return initializeFirestore(app, {}, env.FIREBASE_DATABASE_ID);
     }
     return initializeFirestore(app, {
       localCache: persistentLocalCache({
@@ -37,7 +37,7 @@ export const db = (() => {
     }, env.FIREBASE_DATABASE_ID);
   } catch (err) {
     console.warn('Firestore offline persistence fallback:', err);
-    return getFirestore(app, env.FIREBASE_DATABASE_ID);
+    return initializeFirestore(app, {}, env.FIREBASE_DATABASE_ID);
   }
 })();
 
