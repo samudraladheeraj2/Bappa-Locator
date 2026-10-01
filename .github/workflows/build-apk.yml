@@ -26,6 +26,14 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
 
+      - name: Calculate Dynamic Version
+        id: version_calc
+        run: |
+          VERSION="1.2.${{ github.run_number }}"
+          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
+          echo "RAW_VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "CODE=${{ github.run_number }}" >> $GITHUB_OUTPUT
+
       - name: Install Dependencies
         run: |
           npm install --legacy-peer-deps
@@ -76,6 +84,8 @@ jobs:
                       storePassword "BappaLocatorSecretPassword123!"
                       keyAlias "bappalocator"
                       keyPassword "BappaLocatorSecretPassword123!"
+                      v1SigningEnabled true
+                      v2SigningEnabled true
                   }
               }
           """
@@ -91,25 +101,34 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
 
-      - name: Extract Version & Rename APK
+      - name: Prepare Release Artifacts
         id: release_info
         run: |
-          VERSION=$(node -p "require('./version.json').latestVersion")
-          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
           APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
-          echo "Found APK at: $APK_PATH"
-          cp "$APK_PATH" "bappa-locator-v$VERSION.apk"
-          echo "FILENAME=bappa-locator-v$VERSION.apk" >> $GITHUB_OUTPUT
+          cp "$APK_PATH" "bappa-locator-${{ steps.version_calc.outputs.VERSION }}.apk"
+          
+          # Generate version.json dynamically and upload it as a release asset
+          cat <<EOF > version.json
+          {
+            "latestVersion": "${{ steps.version_calc.outputs.RAW_VERSION }}",
+            "versionCode": ${{ steps.version_calc.outputs.CODE }},
+            "apkUrl": "https://github.com/samudraladheeraj2/Bappa-Locator/releases/download/${{ steps.version_calc.outputs.VERSION }}/bappa-locator-${{ steps.version_calc.outputs.VERSION }}.apk",
+            "releaseNotes": "Automated build ${{ steps.version_calc.outputs.VERSION }}",
+            "forceUpdate": false
+          }
+          EOF
 
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.release_info.outputs.VERSION }}
-          name: Release ${{ steps.release_info.outputs.VERSION }}
-          body: "Automated signed APK release for Bappa Locator ${{ steps.release_info.outputs.VERSION }}."
+          tag_name: ${{ steps.version_calc.outputs.VERSION }}
+          name: Release ${{ steps.version_calc.outputs.VERSION }}
+          body: "Automated signed APK release for Bappa Locator ${{ steps.version_calc.outputs.VERSION }}."
           draft: false
           prerelease: false
-          files: ${{ steps.release_info.outputs.FILENAME }}
+          files: |
+            bappa-locator-${{ steps.version_calc.outputs.VERSION }}.apk
+            version.json
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
