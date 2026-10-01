@@ -65,16 +65,25 @@ jobs:
 
       - name: Configure Gradle Signing
         run: |
-          sed -i '/buildTypes {/i \
-    signingConfigs {\
-        release {\
-            storeFile file("release.keystore")\
-            storePassword "BappaLocatorSecretPassword123!"\
-            keyAlias "bappalocator"\
-            keyPassword "BappaLocatorSecretPassword123!"\
-        }\
-    }' android/app/build.gradle
-          sed -i 's/signingConfig signingConfigs.debug/signingConfig signingConfigs.release/g' android/app/build.gradle
+          python3 -c '
+          path = "android/app/build.gradle"
+          with open(path, "r") as f:
+              content = f.read()
+          signing = """
+              signingConfigs {
+                  release {
+                      storeFile file("release.keystore")
+                      storePassword "BappaLocatorSecretPassword123!"
+                      keyAlias "bappalocator"
+                      keyPassword "BappaLocatorSecretPassword123!"
+                  }
+              }
+          """
+          content = content.replace("buildTypes {", signing + "\n    buildTypes {")
+          content = content.replace("signingConfig signingConfigs.debug", "signingConfig signingConfigs.release")
+          with open(path, "w") as f:
+              f.write(content)
+          '
 
       - name: Build Android Release APK
         run: |
