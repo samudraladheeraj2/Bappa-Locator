@@ -105,7 +105,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-700 hover:bg-amber-600 text-white transition-all shadow-sm border border-amber-600 shrink-0"
             title="Suggest Annadanam"
           >
-            <Utensils className="w-3.5 h-3.5 shrink-0 text-yellow-300" />
+            <PlusCircle className="w-3.5 h-3.5 shrink-0 text-yellow-300" />
             <span className="inline font-bold">Suggest Annadanam</span>
           </button>
 
