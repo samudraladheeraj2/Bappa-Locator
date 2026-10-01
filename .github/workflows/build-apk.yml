@@ -96,7 +96,9 @@ jobs:
         run: |
           VERSION=$(node -p "require('./version.json').latestVersion")
           echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
-          cp android/app/build/outputs/apk/release/app-release-unsigned.apk bappa-locator-v$VERSION.apk 2>/devnull || cp android/app/build/outputs/apk/release/app-release.apk bappa-locator-v$VERSION.apk
+          APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          echo "Found APK at: $APK_PATH"
+          cp "$APK_PATH" "bappa-locator-v$VERSION.apk"
           echo "FILENAME=bappa-locator-v$VERSION.apk" >> $GITHUB_OUTPUT
 
       - name: Create or Update GitHub Release
