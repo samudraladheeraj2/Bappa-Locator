@@ -318,6 +318,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const isAdmin = authenticatedAdmin || checkIsAdminUser(user, null);
 
   useEffect(() => {
+    console.log('[DEBUG] AdminPanel isAdmin state:', {
+      authenticatedAdmin,
+      currentUserEmail: user?.email,
+      isAdminComputed: isAdmin
+    });
+  }, [authenticatedAdmin, user, isAdmin]);
+
+  useEffect(() => {
     const checkState = () => {
       const isAdm = checkIsAdminUser(auth.currentUser, null);
       if (isAdm) {

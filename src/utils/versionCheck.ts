@@ -36,18 +36,38 @@ export function isVersionNewer(latest: string, current: string): boolean {
   return lPat > cPat;
 }
 
+export async function fetchWithTimeout(url: string, options: any = {}, timeoutMs = 2500): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+
 export async function checkForAppUpdates(): Promise<VersionCheckResult> {
   const current = CURRENT_APP_VERSION;
   try {
     let res: Response | null = null;
     try {
-      res = await fetch(`${VERSION_CHECK_URL}?t=${Date.now()}`, { cache: 'no-cache' });
+      res = await fetchWithTimeout(`${VERSION_CHECK_URL}?t=${Date.now()}`, { cache: 'no-cache' });
     } catch {
       res = null;
     }
 
     if (!res || !res.ok) {
-      res = await fetch(`/version.json?t=${Date.now()}`, { cache: 'no-cache' });
+      try {
+        res = await fetchWithTimeout(`/version.json?t=${Date.now()}`, { cache: 'no-cache' });
+      } catch {
+        res = null;
+      }
     }
 
     if (!res || !res.ok) {

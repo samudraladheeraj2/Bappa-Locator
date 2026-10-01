@@ -63,7 +63,6 @@ service cloud.firestore {
       allow create: if isValidSubmission(incoming()) && (incoming().status == 'pending' || isAdmin());
       allow update: if isAdmin() || (
         isValidSubmission(incoming()) &&
-        incoming().status == existing().status &&
         incoming().submittedBy == existing().submittedBy
       );
       allow delete: if isAdmin();
@@ -74,7 +73,6 @@ service cloud.firestore {
       allow create: if isValidAnnadanam(incoming()) && (incoming().status == 'pending' || isAdmin());
       allow update: if isAdmin() || (
         isValidAnnadanam(incoming()) &&
-        incoming().status == existing().status &&
         incoming().submittedBy == existing().submittedBy
       );
       allow delete: if isAdmin();
