@@ -4,7 +4,7 @@ android {
     namespace = "com.bappalocator.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.bappalocator.app"
+        applicationId "com.bappalocator.app.v2"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
