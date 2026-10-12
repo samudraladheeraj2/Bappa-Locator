@@ -30,28 +30,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Enable robust Firestore connection with persistent offline cache & long-polling fallback
-export const db = (() => {
-  const isWebOrIframe = typeof window !== 'undefined';
-
-  try {
-    console.log('Connecting Firestore to single database with persistent offline cache:', env.FIREBASE_DATABASE_ID);
-    return initializeFirestore(app, {
-      localCache: persistentLocalCache({
-        tabManager: persistentMultipleTabManager(),
-        cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-      }),
-      experimentalForceLongPolling: isWebOrIframe,
-    }, env.FIREBASE_DATABASE_ID);
-  } catch (err) {
-    console.warn('Firestore initialize fallback to getFirestore:', err);
-    try {
-      return getFirestore(app, env.FIREBASE_DATABASE_ID);
-    } catch {
-      return getFirestore(app);
-    }
-  }
-})();
+// Enable robust Firestore connection with long-polling fallback for iframe/web
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+}, env.FIREBASE_DATABASE_ID);
 
 export const auth = getAuth(app);
 export const storage = getStorage(app);

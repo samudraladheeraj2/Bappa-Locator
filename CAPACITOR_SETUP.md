@@ -46,6 +46,6 @@ An automated workflow is configured at `.github/workflows/build-apk.yml`:
 ## 📋 Capacitor Configuration Summary
 
 - **App Name**: Bappa Locator
-- **App ID**: `com.bappalocator.app`
+- **App ID**: `com.bappalocator.app.v2`
 - **Web Directory**: `dist`
 - **Config File**: `capacitor.config.ts`

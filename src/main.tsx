@@ -38,7 +38,7 @@ class ErrorBoundary extends Component<Props, State> {
           <div className="w-16 h-16 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center text-3xl font-bold mb-4 shadow-sm border border-amber-200">
             🚩
           </div>
-          <h1 className="text-xl font-bold text-amber-950 mb-2">Bappa Locator</h1>
+          <h1 className="text-xl font-bold text-amber-950 mb-2">Pandal Hopper</h1>
           <p className="text-sm text-gray-600 max-w-sm mb-6">
             Something went wrong while loading. Please tap below to reload the app.
           </p>

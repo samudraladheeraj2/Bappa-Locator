@@ -20,6 +20,7 @@ Set up the following secrets in your GitHub repository:
 | `VITE_GOOGLE_MAPS_API_KEY` | Restricted Google Maps API Key | `AIzaSy...` |
 | `GEMINI_API_KEY` | Gemini AI Key | `AIzaSy...` |
 | `APP_URL` | Production Web URL | `https://bappa-locator.app` |
+| `RELEASE_KEYSTORE_BASE64` | Android APK Signing Keystore (Base64) *(Optional)* | Default persistent `android/app/release.keystore` is included in repo so signatures never change |
 
 ---
 

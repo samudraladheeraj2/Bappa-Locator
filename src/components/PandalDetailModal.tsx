@@ -113,7 +113,8 @@ export const PandalDetailModal: React.FC<PandalDetailModalProps> = ({
   };
 
   const handleShare = async () => {
-    const shareText = `🚩 Check out ${pandal.name} located at ${pandal.address}, ${pandal.area}, ${pandal.city}! Found via Bappa Locator.`;
+    const icon = pandal.festivalType === 'durga' ? '🌺' : '🚩';
+    const shareText = `${icon} Check out ${pandal.name} located at ${pandal.address}, ${pandal.area}, ${pandal.city}! Found via Pandal Hopper.`;
     const shareUrl = window.location.origin;
 
     if (navigator.share) {
@@ -290,18 +291,23 @@ export const PandalDetailModal: React.FC<PandalDetailModalProps> = ({
     <>
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
         <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
-          {/* Header Image & Actions — Displays Current Year Lord Ganesha Idol or Fallback */}
+          {/* Header Image & Actions — Displays Current Year Idol or Fallback */}
           <div className="relative h-56 sm:h-64 bg-amber-950 overflow-hidden flex-shrink-0">
             {coverPhoto ? (
               <img
                 src={coverPhoto}
                 alt={pandal.name}
-                onClick={() => setLightboxImage({ url: coverPhoto, title: `${pandal.name} — Lord Ganesha Idol (${coverMetadata.year})` })}
+                onClick={() =>
+                  setLightboxImage({
+                    url: coverPhoto,
+                    title: `${pandal.name} — ${pandal.festivalType === 'durga' ? 'Maa Durga Idol' : 'Lord Ganesha Idol'} (${coverMetadata.year})`,
+                  })
+                }
                 className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-amber-700 to-amber-950 flex flex-col items-center justify-center text-amber-200">
-                <span className="text-4xl mb-1">🚩</span>
+                <span className="text-4xl mb-1">{pandal.festivalType === 'durga' ? '🌺' : '🚩'}</span>
                 <Sparkles className="w-8 h-8 text-yellow-300/60" />
               </div>
             )}
@@ -754,18 +760,20 @@ export const PandalDetailModal: React.FC<PandalDetailModalProps> = ({
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <span className="text-[11px] font-bold text-amber-900 block">
-                        🚩 Ganesha Idol (Cover)
+                        {pandal.festivalType === 'durga' ? '🌺 Maa Durga Idol (Cover)' : '🚩 Ganesha Idol (Cover)'}
                       </span>
                       <div className="relative aspect-video rounded-lg overflow-hidden border-2 border-amber-300 bg-black/5 flex items-center justify-center">
                         {editForm.ganeshaImage || editForm.image ? (
                           <img
                             src={editForm.ganeshaImage || editForm.image}
-                            alt="Ganesha Idol"
+                            alt={pandal.festivalType === 'durga' ? 'Maa Durga Idol' : 'Ganesha Idol'}
                             className="w-full h-full object-cover"
                           />
                         ) : (
                           <div className="text-center p-2 text-gray-400">
-                            <span className="text-2xl block mb-1">🚩</span>
+                            <span className="text-2xl block mb-1">
+                              {pandal.festivalType === 'durga' ? '🌺' : '🚩'}
+                            </span>
                             <span className="text-[10px]">No idol photo</span>
                           </div>
                         )}

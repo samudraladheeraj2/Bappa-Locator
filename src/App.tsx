@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { WifiOff, Radio } from 'lucide-react';
-import { Pandal, ViewMode } from './types';
+import { Pandal, ViewMode, FestivalType } from './types';
 import { PANDALS_DATA } from './data/pandals';
+import { DURGA_PANDALS_DATA } from './data/durgaPandals';
 import { Navbar } from './components/Navbar';
+import { FestivalTabBar } from './components/FestivalTabBar';
 import { SearchFilter } from './components/SearchFilter';
 import { MapView } from './components/MapView';
 import { PandalList } from './components/PandalList';
@@ -23,6 +25,14 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { ensureAdminExists, checkIsAdminUser } from './utils/adminInit';
 
 export default function App() {
+  const [festivalType, setFestivalType] = useState<FestivalType>(() => {
+    try {
+      const saved = localStorage.getItem('pandal_hopper_festival_type');
+      if (saved === 'durga' || saved === 'ganesh') return saved;
+    } catch (e) {}
+    return 'ganesh';
+  });
+
   const [pandals, setPandals] = useState<Pandal[]>(() => {
     try {
       const cached = localStorage.getItem('bappa_pandals_cache');
@@ -31,7 +41,7 @@ export default function App() {
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (e) {}
-    return PANDALS_DATA;
+    return [...PANDALS_DATA, ...DURGA_PANDALS_DATA];
   });
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -144,6 +154,13 @@ export default function App() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
+
+  // Save festival type preference
+  useEffect(() => {
+    try {
+      localStorage.setItem('pandal_hopper_festival_type', festivalType);
+    } catch (e) {}
+  }, [festivalType]);
 
   // Save pandals cache
   useEffect(() => {
@@ -288,11 +305,12 @@ export default function App() {
             nimajjanamDate: data.nimajjanamDate,
             popular: !!data.popular,
             status: 'approved',
+            festivalType: data.festivalType || 'ganesh',
           };
         });
 
-        // Combine static PANDALS_DATA with approved user submissions
-        const combined = [...PANDALS_DATA, ...approvedSubmissions];
+        // Combine static PANDALS_DATA + DURGA_PANDALS_DATA with approved user submissions
+        const combined = [...PANDALS_DATA, ...DURGA_PANDALS_DATA, ...approvedSubmissions];
         setPandals((prev) => {
           if (JSON.stringify(prev) === JSON.stringify(combined)) {
             return prev;
@@ -375,9 +393,26 @@ export default function App() {
     return distMap;
   }, [userLocation, pandals]);
 
-  // Filtered and sorted pandals
+  // Festival-based pandal filtering and counts
+  const ganeshCount = useMemo(
+    () => pandals.filter((p) => p.festivalType !== 'durga').length,
+    [pandals]
+  );
+  const durgaCount = useMemo(
+    () => pandals.filter((p) => p.festivalType === 'durga').length,
+    [pandals]
+  );
+
+  const currentFestivalPandals = useMemo(() => {
+    return pandals.filter((p) => {
+      if (festivalType === 'durga') return p.festivalType === 'durga';
+      return p.festivalType !== 'durga';
+    });
+  }, [pandals, festivalType]);
+
+  // Filtered and sorted pandals based on selected festival, search, favorites, and location
   const filteredPandals = useMemo(() => {
-    let result = pandals.filter((pandal) => {
+    let result = currentFestivalPandals.filter((pandal) => {
       // Favorites filter
       if (showFavoritesOnly && !favorites.includes(pandal.id)) {
         return false;
@@ -412,7 +447,7 @@ export default function App() {
     }
 
     return result;
-  }, [pandals, selectedCity, searchQuery, sortByDistance, userLocation, distances, showFavoritesOnly, favorites]);
+  }, [currentFestivalPandals, selectedCity, searchQuery, sortByDistance, userLocation, distances, showFavoritesOnly, favorites]);
 
   const handleGetDirections = (pandal: Pandal) => {
     const originParam = userLocation ? `&origin=${userLocation.latitude},${userLocation.longitude}` : '';
@@ -440,9 +475,20 @@ export default function App() {
             </span>
           </div>
         )}
+
+        {/* Top Tab Switcher: Ganesh Pandals vs Durga Pandals */}
+        <FestivalTabBar
+          activeFestival={festivalType}
+          onChangeFestival={setFestivalType}
+          ganeshCount={ganeshCount}
+          durgaCount={durgaCount}
+        />
+
         <Navbar
           viewMode={viewMode}
           onViewModeChange={setViewMode}
+          festivalType={festivalType}
+          onFestivalTypeChange={setFestivalType}
           onGetLocation={handleGetLocation}
           onPandalsNearMe={handlePandalsNearMe}
           onAnnadanamNearMe={handleAnnadanamNearMe}
@@ -455,6 +501,7 @@ export default function App() {
           onOpenDrawer={() => setIsNavigationDrawerOpen(true)}
           isAdmin={isAdmin}
         />
+
         {viewMode !== 'annadanam' && (
           <SearchFilter
             searchQuery={searchQuery}
@@ -462,11 +509,12 @@ export default function App() {
             sortByDistance={sortByDistance}
             onSortToggle={() => setSortByDistance(!sortByDistance)}
             hasLocation={!!userLocation}
-            totalCount={pandals.length}
+            totalCount={currentFestivalPandals.length}
             filteredCount={filteredPandals.length}
             showFavoritesOnly={showFavoritesOnly}
             onFavoritesToggle={() => setShowFavoritesOnly(!showFavoritesOnly)}
             favoritesCount={favorites.length}
+            festivalType={festivalType}
           />
         )}
       </div>
@@ -501,6 +549,7 @@ export default function App() {
                   onToggleFavorite={handleToggleFavorite}
                   showFavoritesOnly={showFavoritesOnly}
                   hasLocation={!!userLocation}
+                  festivalType={festivalType}
                 />
               ) : (
                 <AnnadanamView
@@ -508,6 +557,7 @@ export default function App() {
                   userLocation={userLocation}
                   onGetLocation={handleAnnadanamNearMe}
                   isLocating={isLocating}
+                  festivalType={festivalType}
                 />
               )}
             </main>
@@ -532,6 +582,7 @@ export default function App() {
         onClose={() => setIsSubmitModalOpen(false)}
         onSuccess={() => {}}
         livePandals={pandals}
+        initialFestivalType={festivalType}
       />
 
       {/* Submit Annadanam Modal */}
@@ -539,6 +590,7 @@ export default function App() {
         isOpen={isAnnadanamModalOpen}
         onClose={() => setIsAnnadanamModalOpen(false)}
         onSuccess={() => {}}
+        initialFestivalType={festivalType}
       />
 
       {/* Admin Panel Modal */}
@@ -576,6 +628,8 @@ export default function App() {
         onClose={() => setIsNavigationDrawerOpen(false)}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
+        festivalType={festivalType}
+        onFestivalTypeChange={setFestivalType}
         onGetLocation={handleGetLocation}
         onPandalsNearMe={handlePandalsNearMe}
         onAnnadanamNearMe={handleAnnadanamNearMe}
@@ -586,7 +640,7 @@ export default function App() {
         onOpenAdmin={() => setIsAdminModalOpen(true)}
         onOpenProfile={() => setIsProfileModalOpen(true)}
         isAdmin={isAdmin}
-        totalPandals={pandals.length}
+        totalPandals={currentFestivalPandals.length}
         favoritesCount={favorites.length}
         showFavoritesOnly={showFavoritesOnly}
         onToggleFavoritesOnly={() => setShowFavoritesOnly(!showFavoritesOnly)}

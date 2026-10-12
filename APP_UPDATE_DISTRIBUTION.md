@@ -19,25 +19,26 @@ Your app features an automated **In-App Update Checker** (`src/components/Androi
 
 ### Steps to Trigger an Update for All Users:
 
-1. **Build the New APK**:
-   - Push your code changes to GitHub. The `.github/workflows/deploy.yml` workflow will automatically build the new APK (`bappa-locator-android-apk`).
-   - Create a Release on GitHub (e.g. Tag `v1.1.0`) and attach the new `.apk` file.
-
-2. **Update `public/version.json`**:
-   Change `latestVersion` to `"1.1.0"` (or your new version) and paste the new APK download URL:
-
+1. **Update `version.json`**:
+   Simply increment `latestVersion` (e.g. `"1.2.6"`) and `versionCode` (e.g. `10`) in root `version.json`:
    ```json
    {
-     "latestVersion": "1.1.0",
-     "versionCode": 2,
-     "apkUrl": "https://github.com/samudraladheeraj/bappa-locator/releases/download/v1.1.0/bappa-locator-v1.1.0.apk",
-     "releaseNotes": "Admin Console security updates, zero-flicker map performance, and cross-platform GitHub Secrets integration!",
+     "latestVersion": "1.2.6",
+     "versionCode": 10,
+     "apkUrl": "https://github.com/samudraladheeraj2/Bappa-Locator/releases/download/v1.2.6/bappa-locator-v1.2.6.apk",
+     "releaseNotes": "Highlight your new features or bug fixes here!",
      "forceUpdate": false
    }
    ```
 
-3. **Push `version.json` to GitHub**:
-   - As soon as `version.json` is updated on `main`, all user devices will detect the new version on next startup and prompt them to update!
+2. **Automatic Package & Version Synchronization**:
+   - `scripts/sync-versions.js` automatically propagates the version to `package.json`, `public/version.json`, `src/utils/versionCheck.ts`, `capacitor.config.ts`, and `android/app/build.gradle`.
+   - The signing keystore is permanently embedded in `android/app/release.keystore`, ensuring every generated APK uses the exact same digital certificate. **Users can update smoothly without any "Package conflicts with an existing package" or packaging errors!**
+
+3. **Push to GitHub**:
+   - Pushing your changes to `main` automatically triggers `.github/workflows/build-apk.yml`.
+   - The signed APK is compiled and published as a GitHub Release under tag `v1.2.6`.
+   - All installed apps on user phones will automatically detect the new version on their next app launch and prompt them to update!
 
 ---
 

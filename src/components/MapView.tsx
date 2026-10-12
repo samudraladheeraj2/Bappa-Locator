@@ -54,12 +54,12 @@ export const PandalPreviewCard: React.FC<PandalPreviewCardProps> = React.memo(({
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-2xl">
-                🚩
+                {pandal.festivalType === 'durga' ? '🌺' : '🚩'}
               </div>
             )}
             {coverMeta.isCurrentYear ? (
               <span className="absolute bottom-0 inset-x-0 bg-emerald-950/80 text-emerald-300 text-[8px] font-bold text-center py-0.5">
-                {coverMeta.year} Idol
+                {coverMeta.year} {pandal.festivalType === 'durga' ? 'Durga' : 'Idol'}
               </span>
             ) : (
               <span className="absolute bottom-0 inset-x-0 bg-black/70 text-yellow-300 text-[8px] font-bold text-center py-0.5 truncate px-0.5">
@@ -344,8 +344,22 @@ export const MapView: React.FC<MapViewProps> = React.memo(({
       const existingMarker = markersRef.current[pandal.id];
 
       // Helper to generate marker icon
-      const createIcon = (selected: boolean) =>
-        L.divIcon({
+      const isDurgaPin = pandal.festivalType === 'durga';
+      const pinEmoji = isDurgaPin ? '🌺' : '🚩';
+
+      const createIcon = (selected: boolean) => {
+        const pinGradient = isDurgaPin
+          ? selected
+            ? 'linear-gradient(135deg, #9f1239, #e11d48)'
+            : 'linear-gradient(135deg, #be123c, #fb7185)'
+          : selected
+          ? 'linear-gradient(135deg, #b45309, #d97706)'
+          : 'linear-gradient(135deg, #d97706, #f59e0b)';
+        const pinArrowColor = isDurgaPin
+          ? selected ? '#9f1239' : '#be123c'
+          : selected ? '#b45309' : '#d97706';
+
+        return L.divIcon({
           className: 'custom-pandal-pin',
           html: `
             <div style="
@@ -359,7 +373,7 @@ export const MapView: React.FC<MapViewProps> = React.memo(({
               ${selected ? 'transform: translate(-50%, -115%) scale(1.22); z-index: 9999;' : ''}
             ">
               <div style="
-                background: ${selected ? 'linear-gradient(135deg, #b45309, #d97706)' : 'linear-gradient(135deg, #d97706, #f59e0b)'};
+                background: ${pinGradient};
                 color: white;
                 padding: ${selected ? '6px 10px' : '4px 8px'};
                 border-radius: 20px;
@@ -372,7 +386,7 @@ export const MapView: React.FC<MapViewProps> = React.memo(({
                 border: 2px solid #ffffff;
                 white-space: nowrap;
               ">
-                <span>🚩</span>
+                <span>${pinEmoji}</span>
                 <span>${pandal.name.split(' ')[0]}</span>
               </div>
               <div style="
@@ -380,7 +394,7 @@ export const MapView: React.FC<MapViewProps> = React.memo(({
                 height: 0;
                 border-left: 6px solid transparent;
                 border-right: 6px solid transparent;
-                border-top: 8px solid ${selected ? '#b45309' : '#d97706'};
+                border-top: 8px solid ${pinArrowColor};
                 margin-top: -1px;
               "></div>
               <div style="
@@ -394,6 +408,7 @@ export const MapView: React.FC<MapViewProps> = React.memo(({
           `,
           iconSize: [0, 0],
         });
+      };
 
       if (existingMarker) {
         // ONLY update icon if selection status changed for this specific marker

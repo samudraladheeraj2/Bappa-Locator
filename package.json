@@ -1,9 +1,10 @@
 {
   "name": "react-example",
   "private": true,
-  "version": "1.2.3",
+  "version": "1.2.5",
   "type": "module",
   "scripts": {
+    "prebuild": "node scripts/sync-versions.js",
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",

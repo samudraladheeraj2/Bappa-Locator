@@ -28,7 +28,7 @@ import { LocationPicker } from './LocationPicker';
 import { compressImageFile, getInstantPreviewUrl } from '../utils/imageCompressor';
 import { checkDuplicateLocation, DuplicateCheckResult } from '../utils/duplicateDetector';
 import { PANDALS_DATA } from '../data/pandals';
-import { Pandal } from '../types';
+import { Pandal, FestivalType } from '../types';
 import { UpdateIdolModal } from './UpdateIdolModal';
 import { extractExifDateTime } from '../utils/exifValidator';
 import { sanitizeText } from '../utils/sanitizer';
@@ -39,6 +39,7 @@ interface NewSubmissionFormProps {
   onClose: () => void;
   onSuccess: () => void;
   livePandals?: Pandal[];
+  initialFestivalType?: FestivalType;
 }
 
 const DRAFT_STORAGE_KEY = 'bappa_pandal_submission_draft';
@@ -48,8 +49,17 @@ export const NewSubmissionForm: React.FC<NewSubmissionFormProps> = ({
   onClose,
   onSuccess,
   livePandals = [],
+  initialFestivalType = 'ganesh',
 }) => {
-  // Photo States: Explicit Ganesha Photo (Cover) + Pandal Setup Photo + Additional Photos
+  const [festivalType, setFestivalType] = useState<FestivalType>(initialFestivalType);
+
+  useEffect(() => {
+    if (isOpen) {
+      setFestivalType(initialFestivalType || 'ganesh');
+    }
+  }, [isOpen, initialFestivalType]);
+
+  // Photo States: Explicit Ganesha/Durga Photo (Cover) + Pandal Setup Photo + Additional Photos
   const [ganeshaPhoto, setGaneshaPhoto] = useState<string | null>(null);
   const [pandalPhoto, setPandalPhoto] = useState<string | null>(null);
   const [additionalPhotos, setAdditionalPhotos] = useState<string[]>([]);
@@ -714,6 +724,7 @@ export const NewSubmissionForm: React.FC<NewSubmissionFormProps> = ({
         submittedBy,
         submittedByEmail: user?.email || '',
         createdAt: new Date().toISOString(),
+        festivalType: festivalType || 'ganesh',
       };
 
       await setDoc(doc(db, 'submissions', submissionId), submissionData);
@@ -871,17 +882,56 @@ export const NewSubmissionForm: React.FC<NewSubmissionFormProps> = ({
         className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col relative"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-amber-800 via-amber-700 to-amber-800 text-white px-6 py-4 flex items-center justify-between border-b border-amber-600/40 sticky top-0 z-20 shadow-xs">
+        <div
+          className={`text-white px-6 py-4 flex items-center justify-between border-b sticky top-0 z-20 shadow-xs transition-colors duration-300 ${
+            festivalType === 'durga'
+              ? 'bg-gradient-to-r from-red-950 via-rose-900 to-amber-950 border-rose-600/40'
+              : 'bg-gradient-to-r from-amber-800 via-amber-700 to-amber-800 border-amber-600/40'
+          }`}
+        >
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-amber-900/60 rounded-xl border border-amber-500/40 text-yellow-300">
+            <div
+              className={`p-2 rounded-xl border text-yellow-300 ${
+                festivalType === 'durga'
+                  ? 'bg-rose-950/70 border-rose-500/40'
+                  : 'bg-amber-900/60 border-amber-500/40'
+              }`}
+            >
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-extrabold tracking-tight text-yellow-100">
-                Add Your Mandapam
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-yellow-100">
+                  {festivalType === 'durga' ? 'Suggest Durga Puja Pandal' : 'Suggest Ganesh Mandapam'}
+                </h2>
+                {/* Festival Switcher Capsule */}
+                <div className="flex items-center bg-black/40 p-0.5 rounded-lg border border-white/20">
+                  <button
+                    type="button"
+                    onClick={() => setFestivalType('ganesh')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-black transition-all ${
+                      festivalType === 'ganesh'
+                        ? 'bg-amber-500 text-amber-950 shadow-xs'
+                        : 'text-amber-200 hover:text-white'
+                    }`}
+                  >
+                    🐘 Ganesh
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFestivalType('durga')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-black transition-all ${
+                      festivalType === 'durga'
+                        ? 'bg-rose-600 text-white shadow-xs'
+                        : 'text-rose-200 hover:text-white'
+                    }`}
+                  >
+                    🌺 Durga
+                  </button>
+                </div>
+              </div>
               <p className="text-xs text-amber-200">
-                Free listing on Bappa Locator • Reaching thousands of devotees
+                Free community listing on Pandal Hopper • Reaching thousands of devotees
               </p>
             </div>
           </div>
@@ -949,8 +999,8 @@ export const NewSubmissionForm: React.FC<NewSubmissionFormProps> = ({
                       : 'Pandal Already Suggested!'}
                   </h3>
                   <p className="text-sm text-gray-700 leading-relaxed">
-                    Ganpati Bappa Morya! {submittedDuplicateInfo.type === 'live'
-                      ? `A pandal at this exact pin location is already live on Bappa Locator as `
+                    {festivalType === 'durga' ? 'Jai Mata Di!' : 'Ganpati Bappa Morya!'} {submittedDuplicateInfo.type === 'live'
+                      ? `A pandal at this exact pin location is already live on Pandal Hopper as `
                       : `A pandal at this pin location is already suggested and under review as `}
                     <strong className="text-amber-950 font-bold underline decoration-amber-400">
                       "{submittedDuplicateInfo.matchedPandal?.name}"
@@ -1120,7 +1170,7 @@ export const NewSubmissionForm: React.FC<NewSubmissionFormProps> = ({
                         </span>
                       </div>
                       <p className="font-extrabold text-sm text-gray-900 leading-snug">
-                        "{duplicateCheck.matchedPandal?.name}" {duplicateCheck.type === 'live' ? 'is already live and active on Bappa Locator!' : 'has already been suggested and is pending approval.'}
+                        "{duplicateCheck.matchedPandal?.name}" {duplicateCheck.type === 'live' ? 'is already live and active on Pandal Hopper!' : 'has already been suggested and is pending approval.'}
                       </p>
                       {duplicateCheck.matchedPandal?.address && (
                         <p className="text-gray-600 truncate">

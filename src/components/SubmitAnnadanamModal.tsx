@@ -8,18 +8,28 @@ import { PhotoUploader } from './PhotoUploader';
 import { ANNADANAM_DATA } from '../data/annadanam';
 import { checkDuplicateAnnadanamLocation } from '../utils/duplicateDetector';
 import { isAnnadanamExpired, cleanupExpiredAnnadanam } from '../utils/annadanamExpiry';
+import { FestivalType } from '../types';
 
 interface SubmitAnnadanamModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  initialFestivalType?: FestivalType;
 }
 
 export const SubmitAnnadanamModal: React.FC<SubmitAnnadanamModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  initialFestivalType = 'ganesh',
 }) => {
+  const [festivalType, setFestivalType] = useState<FestivalType>(initialFestivalType);
+
+  useEffect(() => {
+    if (isOpen) {
+      setFestivalType(initialFestivalType || 'ganesh');
+    }
+  }, [isOpen, initialFestivalType]);
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState(false);
@@ -178,6 +188,7 @@ export const SubmitAnnadanamModal: React.FC<SubmitAnnadanamModalProps> = ({
         submittedBy: user?.uid || 'anonymous',
         submittedByEmail: user?.email || '',
         createdAt: new Date().toISOString(),
+        festivalType: festivalType || 'ganesh',
         // Duplicate detection metadata
         isDuplicate: duplicateCheck.isDuplicate,
         duplicateType: duplicateCheck.type || null,
@@ -241,14 +252,57 @@ export const SubmitAnnadanamModal: React.FC<SubmitAnnadanamModalProps> = ({
       >
         
         {/* Header */}
-        <div className="bg-gradient-to-r from-amber-900 to-amber-950 text-white p-4 sm:p-5 flex items-center justify-between shrink-0 shadow-sm">
+        <div
+          className={`text-white p-4 sm:p-5 flex items-center justify-between shrink-0 shadow-sm transition-colors duration-300 ${
+            festivalType === 'durga'
+              ? 'bg-gradient-to-r from-red-950 via-rose-900 to-amber-950 border-b border-rose-700/60'
+              : 'bg-gradient-to-r from-amber-900 to-amber-950 border-b border-amber-800'
+          }`}
+        >
           <div className="flex items-center space-x-2.5">
-            <div className="p-2 bg-amber-800/80 rounded-xl text-yellow-300">
+            <div
+              className={`p-2 rounded-xl text-yellow-300 ${
+                festivalType === 'durga' ? 'bg-rose-950/80 border border-rose-500/40' : 'bg-amber-800/80'
+              }`}
+            >
               <Utensils className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold">Suggest Annadanam Schedule</h2>
-              <p className="text-xs text-amber-200">Help devotees find free Maha Prasadam & food distribution</p>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-bold">
+                  {festivalType === 'durga' ? 'Suggest Durga Puja Bhog' : 'Suggest Annadanam Schedule'}
+                </h2>
+                {/* Festival Switcher Capsule */}
+                <div className="flex items-center bg-black/40 p-0.5 rounded-lg border border-white/20">
+                  <button
+                    type="button"
+                    onClick={() => setFestivalType('ganesh')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-black transition-all ${
+                      festivalType === 'ganesh'
+                        ? 'bg-amber-500 text-amber-950 shadow-xs'
+                        : 'text-amber-200 hover:text-white'
+                    }`}
+                  >
+                    🐘 Ganesh
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFestivalType('durga')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-black transition-all ${
+                      festivalType === 'durga'
+                        ? 'bg-rose-600 text-white shadow-xs'
+                        : 'text-rose-200 hover:text-white'
+                    }`}
+                  >
+                    🌺 Durga
+                  </button>
+                </div>
+              </div>
+              <p className="text-xs text-amber-200">
+                {festivalType === 'durga'
+                  ? 'Help devotees find sacred Khichuri Bhog & Maha Prasadam timings'
+                  : 'Help devotees find free Maha Prasadam & food distribution'}
+              </p>
             </div>
           </div>
           <button
@@ -256,7 +310,7 @@ export const SubmitAnnadanamModal: React.FC<SubmitAnnadanamModalProps> = ({
               resetForm();
               onClose();
             }}
-            className="p-1.5 text-amber-200 hover:text-white hover:bg-amber-800/50 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-amber-200 hover:text-white hover:bg-black/30 rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

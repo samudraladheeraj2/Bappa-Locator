@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Bappa Locator - Ganesh Pandals & Annadanam",
-  "short_name": "BappaLocator",
-  "description": "Locate Ganesh Pandals, Annadanam timings, and Nimajjanam schedules in Hyderabad with offline map support.",
+  "name": "Pandal Hopper - Ganesh & Durga Pandals",
+  "short_name": "PandalHopper",
+  "description": "Discover Ganesh and Durga Puja pandals, Annadanam timings, and immersion schedules with offline map support.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

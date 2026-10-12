@@ -51,6 +51,7 @@ export interface Pandal {
   status?: 'pending' | 'approved' | 'rejected';
   createdAt?: string;
   popular?: boolean;
+  festivalType?: FestivalType;
 }
 
 export interface Annadanam {
@@ -74,6 +75,8 @@ export interface Annadanam {
   submittedBy: string;
   submittedByEmail?: string;
   createdAt: string;
+  festivalType?: FestivalType;
 }
 
 export type ViewMode = 'map' | 'list' | 'annadanam';
+export type FestivalType = 'ganesh' | 'durga';

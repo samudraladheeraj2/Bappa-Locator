@@ -17,7 +17,7 @@ export const PWAInstallButton: React.FC = () => {
       <button
         onClick={install}
         className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-amber-950 shadow-md transition-all shrink-0 animate-pulse border border-yellow-300/60"
-        title="Install Bappa Locator for instant offline access"
+        title="Install Pandal Hopper for instant offline access"
       >
         <Download className="w-3.5 h-3.5 stroke-[2.5]" />
         <span>Install App</span>
@@ -44,7 +44,7 @@ export const PWAInstallButton: React.FC = () => {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2 text-amber-800 font-bold">
                   <Sparkles className="w-5 h-5 text-yellow-500" />
-                  <h3>Install Bappa Locator</h3>
+                  <h3>Install Pandal Hopper</h3>
                 </div>
                 <button
                   onClick={() => setShowIOSGuide(false)}
@@ -54,7 +54,7 @@ export const PWAInstallButton: React.FC = () => {
                 </button>
               </div>
               <p className="text-xs text-gray-600 mb-4 leading-relaxed">
-                Use Bappa Locator 100% offline even without internet connectivity or when your phone is in airplane mode:
+                Use Pandal Hopper 100% offline even without internet connectivity or when your phone is in airplane mode:
               </p>
               <div className="bg-amber-50 rounded-xl p-3.5 text-xs text-gray-700 space-y-2 border border-amber-200/70 mb-4">
                 <div className="flex items-start gap-2">

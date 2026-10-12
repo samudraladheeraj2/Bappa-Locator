@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Utensils, Calendar, Clock, MapPin, Phone, Sparkles, Navigation, Compass } from 'lucide-react';
-import { Annadanam } from '../types';
+import { Annadanam, FestivalType } from '../types';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { isAnnadanamExpired, cleanupExpiredAnnadanam } from '../utils/annadanamExpiry';
 import { ANNADANAM_DATA } from '../data/annadanam';
+import { DURGA_ANNADANAM_DATA } from '../data/durgaAnnadanam';
 import { calculateDistance, formatDistance } from '../utils/geo';
 
 interface AnnadanamViewProps {
@@ -12,6 +13,7 @@ interface AnnadanamViewProps {
   userLocation?: { latitude: number; longitude: number } | null;
   onGetLocation?: () => void;
   isLocating?: boolean;
+  festivalType?: FestivalType;
 }
 
 export const AnnadanamView: React.FC<AnnadanamViewProps> = ({
@@ -19,26 +21,32 @@ export const AnnadanamView: React.FC<AnnadanamViewProps> = ({
   userLocation,
   onGetLocation,
   isLocating,
+  festivalType = 'ganesh',
 }) => {
+  const isDurga = festivalType === 'durga';
+  const defaultStaticData = isDurga ? DURGA_ANNADANAM_DATA : ANNADANAM_DATA;
+
   const [annadanamList, setAnnadanamList] = useState<Annadanam[]>(() => {
     try {
-      const cached = localStorage.getItem('bappa_annadanam_cache');
+      const cacheKey = isDurga ? 'bappa_durga_annadanam_cache' : 'bappa_annadanam_cache';
+      const cached = localStorage.getItem(cacheKey);
       if (cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (e) {}
-    return ANNADANAM_DATA.filter((item) => !isAnnadanamExpired(item.date, item.createdAt));
+    return defaultStaticData.filter((item) => !isAnnadanamExpired(item.date, item.createdAt));
   });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     try {
+      const cacheKey = isDurga ? 'bappa_durga_annadanam_cache' : 'bappa_annadanam_cache';
       if (annadanamList && annadanamList.length > 0) {
-        localStorage.setItem('bappa_annadanam_cache', JSON.stringify(annadanamList));
+        localStorage.setItem(cacheKey, JSON.stringify(annadanamList));
       }
     } catch (e) {}
-  }, [annadanamList]);
+  }, [annadanamList, isDurga]);
 
   useEffect(() => {
     const q = query(collection(db, 'annadanam'), where('status', '==', 'approved'));
@@ -67,19 +75,26 @@ export const AnnadanamView: React.FC<AnnadanamViewProps> = ({
             submittedBy: data.submittedBy,
             submittedByEmail: data.submittedByEmail,
             createdAt: data.createdAt,
-          };
+            festivalType: data.festivalType || 'ganesh',
+          } as Annadanam;
         });
 
         // Trigger background cleanup of expired records from database
         cleanupExpiredAnnadanam(rawItems).catch(() => {});
 
+        // Filter based on active festival
+        const filteredFirestore = rawItems.filter((item) => {
+          if (isDurga) return item.festivalType === 'durga';
+          return item.festivalType !== 'durga';
+        });
+
         // Keep active items: valid on event date (today) and next day (tomorrow)
-        const activeFirestoreItems = rawItems.filter(
+        const activeFirestoreItems = filteredFirestore.filter(
           (item) => !isAnnadanamExpired(item.date, item.createdAt)
         );
 
-        // Merge with non-expired static demo entries if applicable
-        const activeStaticItems = ANNADANAM_DATA.filter(
+        // Merge with non-expired static demo entries for the active festival
+        const activeStaticItems = defaultStaticData.filter(
           (item) => !isAnnadanamExpired(item.date, item.createdAt)
         );
 
@@ -100,7 +115,7 @@ export const AnnadanamView: React.FC<AnnadanamViewProps> = ({
       (error) => {
         console.error('Error fetching annadanam:', error);
         // Fallback to active static items on error
-        const activeStaticItems = ANNADANAM_DATA.filter(
+        const activeStaticItems = defaultStaticData.filter(
           (item) => !isAnnadanamExpired(item.date, item.createdAt)
         );
         setAnnadanamList(activeStaticItems);
@@ -109,7 +124,7 @@ export const AnnadanamView: React.FC<AnnadanamViewProps> = ({
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [isDurga, defaultStaticData]);
 
   // Compute distances and sort by proximity if userLocation is available
   const sortedList = useMemo(() => {
@@ -146,15 +161,27 @@ export const AnnadanamView: React.FC<AnnadanamViewProps> = ({
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-4 pb-24">
       {/* Banner */}
-      <div className="bg-gradient-to-r from-amber-800 to-amber-950 text-white p-6 rounded-2xl shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div
+        className={`text-white p-6 rounded-2xl shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors duration-300 ${
+          isDurga
+            ? 'bg-gradient-to-r from-red-900 via-rose-900 to-amber-950 border border-rose-500/40 shadow-rose-950/30'
+            : 'bg-gradient-to-r from-amber-800 to-amber-950 border border-amber-600/40 shadow-amber-950/30'
+        }`}
+      >
         <div>
           <div className="flex items-center space-x-2 text-yellow-300 mb-1">
             <Utensils className="w-5 h-5" />
-            <span className="text-xs font-bold uppercase tracking-wider">Free Maha Prasadam</span>
+            <span className="text-xs font-bold uppercase tracking-wider">
+              {isDurga ? 'Durga Puja Maha Bhog & Prasad' : 'Free Maha Prasadam'}
+            </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold">Annadanam Schedules in Hyderabad</h2>
+          <h2 className="text-xl sm:text-2xl font-bold">
+            {isDurga ? 'Durga Puja Bhog & Annadanam in Hyderabad' : 'Annadanam Schedules in Hyderabad'}
+          </h2>
           <p className="text-xs text-amber-200 mt-1 max-w-md">
-            Find verified community food distribution and Maha Prasadam timings across Ganesh pandals during Ganeshotsav.
+            {isDurga
+              ? 'Find verified community Durga Puja Khichuri Bhog, Saptami/Ashtami/Navami food distribution, and Maha Prasad timings.'
+              : 'Find verified community food distribution and Maha Prasadam timings across Ganesh pandals during Ganeshotsav.'}
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -164,19 +191,35 @@ export const AnnadanamView: React.FC<AnnadanamViewProps> = ({
               disabled={isLocating}
               className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 ${
                 userLocation
-                  ? 'bg-amber-700 text-yellow-300 border border-amber-500'
+                  ? isDurga
+                    ? 'bg-rose-800 text-yellow-200 border border-rose-600'
+                    : 'bg-amber-700 text-yellow-300 border border-amber-500'
+                  : isDurga
+                  ? 'bg-rose-950 text-rose-100 hover:bg-rose-900 border border-rose-800'
                   : 'bg-amber-900 text-amber-100 hover:bg-amber-800 border border-amber-700'
               }`}
             >
               <Navigation className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
-              <span>{isLocating ? 'Locating...' : userLocation ? 'Near Me (Active)' : 'Annadanam near me'}</span>
+              <span>
+                {isLocating
+                  ? 'Locating...'
+                  : userLocation
+                  ? 'Near Me (Active)'
+                  : isDurga
+                  ? 'Maha Bhog near me'
+                  : 'Annadanam near me'}
+              </span>
             </button>
           )}
           <button
             onClick={onOpenSuggestAnnadanam}
-            className="flex-1 sm:flex-initial bg-yellow-500 hover:bg-yellow-400 text-amber-950 px-4 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all shrink-0 whitespace-nowrap"
+            className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all shrink-0 whitespace-nowrap ${
+              isDurga
+                ? 'bg-yellow-400 hover:bg-yellow-300 text-rose-950'
+                : 'bg-yellow-500 hover:bg-yellow-400 text-amber-950'
+            }`}
           >
-            + Suggest Annadanam
+            {isDurga ? '+ Suggest Durga Bhog' : '+ Suggest Annadanam'}
           </button>
         </div>
       </div>
@@ -194,21 +237,31 @@ export const AnnadanamView: React.FC<AnnadanamViewProps> = ({
       )}
 
       {loading ? (
-        <div className="text-center py-16 text-gray-500">Loading Annadanam schedules...</div>
+        <div className="text-center py-16 text-gray-500">
+          {isDurga ? 'Loading Durga Puja Bhog schedules...' : 'Loading Annadanam schedules...'}
+        </div>
       ) : sortedList.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white rounded-2xl border border-amber-100 shadow-xs">
-          <div className="bg-amber-100 p-4 rounded-full text-amber-800 mb-3">
+          <div className={`p-4 rounded-full mb-3 ${isDurga ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}`}>
             <Utensils className="w-8 h-8" />
           </div>
-          <h3 className="text-lg font-bold text-gray-800 mb-1">No Annadanam Schedules Live Yet</h3>
+          <h3 className="text-lg font-bold text-gray-800 mb-1">
+            {isDurga ? 'No Durga Bhog Schedules Live Yet' : 'No Annadanam Schedules Live Yet'}
+          </h3>
           <p className="text-sm text-gray-500 max-w-sm mb-4">
-            Be the first to suggest or contribute Annadanam details for devotees in Hyderabad!
+            {isDurga
+              ? 'Be the first to suggest or contribute Durga Puja Maha Bhog details for devotees in Hyderabad!'
+              : 'Be the first to suggest or contribute Annadanam details for devotees in Hyderabad!'}
           </p>
           <button
             onClick={onOpenSuggestAnnadanam}
-            className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-4 py-2 rounded-xl text-xs shadow-md"
+            className={`font-semibold px-4 py-2 rounded-xl text-xs shadow-md ${
+              isDurga
+                ? 'bg-rose-700 hover:bg-rose-800 text-white'
+                : 'bg-amber-600 hover:bg-amber-700 text-white'
+            }`}
           >
-            Suggest Annadanam
+            {isDurga ? 'Suggest Durga Bhog' : 'Suggest Annadanam'}
           </button>
         </div>
       ) : (

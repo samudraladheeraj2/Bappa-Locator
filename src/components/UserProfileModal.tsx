@@ -415,10 +415,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                           )}
                         </div>
                         <div className="space-y-0.5 min-w-0">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <h5 className="font-bold text-gray-900 text-sm truncate">{pandal.name}</h5>
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${pandal.status === 'approved' ? 'bg-green-100 text-green-800' : pandal.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}`}>
                               {pandal.status}
+                            </span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${pandal.festivalType === 'durga' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}`}>
+                              {pandal.festivalType === 'durga' ? '🌺 Durga' : '🐘 Ganesh'}
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 truncate">{pandal.address}, {pandal.area}</p>

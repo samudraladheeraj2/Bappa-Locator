@@ -1,6 +1,6 @@
 import React from 'react';
 import { MapPin, Navigation, Clock, ChevronRight, Sparkles, Heart, Award } from 'lucide-react';
-import { Pandal } from '../types';
+import { Pandal, FestivalType } from '../types';
 import { formatDistance } from '../utils/geo';
 import { CURRENT_FESTIVAL_YEAR, getCoverPhotoMetadata } from '../utils/yearlyPhotos';
 
@@ -13,6 +13,7 @@ interface PandalListProps {
   onToggleFavorite: (pandalId: string) => void;
   showFavoritesOnly: boolean;
   hasLocation?: boolean;
+  festivalType?: FestivalType;
 }
 
 export const PandalList: React.FC<PandalListProps> = React.memo(({
@@ -24,21 +25,29 @@ export const PandalList: React.FC<PandalListProps> = React.memo(({
   onToggleFavorite,
   showFavoritesOnly,
   hasLocation,
+  festivalType = 'ganesh',
 }) => {
   const currentYear = CURRENT_FESTIVAL_YEAR;
+  const isDurga = festivalType === 'durga';
 
   if (pandals.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-        <div className="bg-amber-100 p-4 rounded-full text-amber-800 mb-3">
+        <div className={`p-4 rounded-full mb-3 ${isDurga ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}`}>
           <Sparkles className="w-8 h-8" />
         </div>
         <h3 className="text-lg font-bold text-gray-800 mb-1">
-          {showFavoritesOnly ? 'No Favorite Pandals Yet' : 'No Pandals Found'}
+          {showFavoritesOnly
+            ? 'No Favorite Pandals Yet'
+            : isDurga
+            ? 'No Durga Pandals Found'
+            : 'No Pandals Found'}
         </h3>
         <p className="text-sm text-gray-500 max-w-sm">
           {showFavoritesOnly
             ? 'Click the heart icon on any pandal card or detail view to save it to your favorites.'
+            : isDurga
+            ? 'Try adjusting your search query or area filter to discover more Durga Puja pandals in Hyderabad.'
             : 'Try adjusting your search query or city filter to discover more Ganesh mandapams.'}
         </p>
       </div>
@@ -48,12 +57,28 @@ export const PandalList: React.FC<PandalListProps> = React.memo(({
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-3 pb-24">
       {hasLocation && Object.keys(distances).length > 0 && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 px-4 py-2.5 rounded-2xl text-xs font-semibold flex items-center justify-between shadow-2xs">
+        <div
+          className={`px-4 py-2.5 rounded-2xl text-xs font-semibold flex items-center justify-between shadow-2xs border ${
+            isDurga
+              ? 'bg-rose-50 border-rose-200 text-rose-950'
+              : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+          }`}
+        >
           <div className="flex items-center gap-2">
-            <Navigation className="w-4 h-4 text-emerald-600 fill-emerald-600 animate-pulse" />
-            <span>Showing nearest Ganesh Pandals & Mandaps to your current location</span>
+            <Navigation className={`w-4 h-4 animate-pulse ${isDurga ? 'text-rose-600 fill-rose-600' : 'text-emerald-600 fill-emerald-600'}`} />
+            <span>
+              {isDurga
+                ? 'Showing nearest Durga Puja Pandals to your current location'
+                : 'Showing nearest Ganesh Pandals & Mandaps to your current location'}
+            </span>
           </div>
-          <span className="text-[10px] bg-emerald-200/80 text-emerald-950 px-2.5 py-0.5 rounded-full font-bold">
+          <span
+            className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold ${
+              isDurga
+                ? 'bg-rose-200/90 text-rose-950'
+                : 'bg-emerald-200/80 text-emerald-950'
+            }`}
+          >
             {pandals.length} Pandals
           </span>
         </div>

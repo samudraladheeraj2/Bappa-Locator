@@ -26,17 +26,9 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
 
-      - name: Calculate Dynamic Version
-        id: version_calc
-        run: |
-          VERSION="1.2.${{ github.run_number }}"
-          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
-          echo "RAW_VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "CODE=${{ github.run_number }}" >> $GITHUB_OUTPUT
-
       - name: Install Dependencies
         run: |
-          npm install --legacy-peer-deps
+          npm ci --legacy-peer-deps || npm install --legacy-peer-deps
           npm install @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps
 
       - name: Build Production Web Bundle
@@ -46,54 +38,44 @@ jobs:
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
         run: npm run build
 
-      - name: Initialize & Setup Capacitor Android Platform
+      - name: Sync Web Assets to Capacitor Android
         run: |
           if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
             npx cap init "Bappa Locator" "com.bappalocator.app.v2" --web-dir dist
           fi
-          rm -rf android
-          npx cap add android
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+          npx cap copy android
           npx cap sync android
           mkdir -p assets
-          cp public/icon.png assets/icon.png
-          npx @capacitor/assets generate --android
+          if [ -f "public/icon.png" ]; then
+            cp public/icon.png assets/icon.png
+            npx @capacitor/assets generate --android || true
+          fi
 
-      - name: Setup Signing Keystore
+      - name: Setup Signing Keystore & Synchronize Package Attributes
         run: |
           mkdir -p android/app
-          keytool -genkeypair -v \
-            -keystore android/app/release.keystore \
-            -alias bappalocator \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -storepass BappaLocatorSecretPassword123! \
-            -keypass BappaLocatorSecretPassword123! \
-            -dname "CN=BappaLocator, OU=App, O=BappaLocator, L=Hyderabad, S=Telangana, C=IN"
-
-      - name: Configure Gradle Signing
-        run: |
-          python3 -c '
-          path = "android/app/build.gradle"
-          with open(path, "r") as f:
-              content = f.read()
-          signing = """
-              signingConfigs {
-                  release {
-                      storeFile file("release.keystore")
-                      storePassword "BappaLocatorSecretPassword123!"
-                      keyAlias "bappalocator"
-                      keyPassword "BappaLocatorSecretPassword123!"
-                      v1SigningEnabled true
-                      v2SigningEnabled true
-                  }
-              }
-          """
-          content = content.replace("buildTypes {", signing + "\n    buildTypes {")
-          content = content.replace("signingConfig signingConfigs.debug", "signingConfig signingConfigs.release")
-          with open(path, "w") as f:
-              f.write(content)
-          '
+          if [ -n "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" ]; then
+            echo "Using release keystore from RELEASE_KEYSTORE_BASE64 GitHub Secret..."
+            echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+          elif [ -f "android/app/release.keystore" ]; then
+            echo "Using persistent repository release.keystore (preserves existing package signature)..."
+          else
+            echo "Generating consistent release keystore..."
+            keytool -genkeypair -v \
+              -keystore android/app/release.keystore \
+              -alias bappalocator \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass BappaLocatorSecretPassword123! \
+              -keypass BappaLocatorSecretPassword123! \
+              -dname "CN=BappaLocator, OU=App, O=BappaLocator, L=Hyderabad, S=Telangana, C=IN"
+          fi
+          # Strictly synchronize version, versionCode and appId across all project manifests
+          node scripts/sync-versions.js
 
       - name: Build Android Release APK
         run: |
@@ -101,34 +83,31 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
 
-      - name: Prepare Release Artifacts
+      - name: Extract Version & Rename Signed APK
         id: release_info
         run: |
-          APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
-          cp "$APK_PATH" "bappa-locator-${{ steps.version_calc.outputs.VERSION }}.apk"
-          
-          # Generate version.json dynamically and upload it as a release asset
-          cat <<EOF > version.json
-          {
-            "latestVersion": "${{ steps.version_calc.outputs.RAW_VERSION }}",
-            "versionCode": ${{ steps.version_calc.outputs.CODE }},
-            "apkUrl": "https://github.com/samudraladheeraj2/Bappa-Locator/releases/download/${{ steps.version_calc.outputs.VERSION }}/bappa-locator-${{ steps.version_calc.outputs.VERSION }}.apk",
-            "releaseNotes": "Automated build ${{ steps.version_calc.outputs.VERSION }}",
-            "forceUpdate": false
-          }
-          EOF
+          VERSION=$(node -p "require('./version.json').latestVersion")
+          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
+          APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" ! -name "*unsigned*" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" ! -name "*unsigned*" | head -n 1)
+          fi
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          fi
+          echo "Found signed APK at: $APK_PATH"
+          cp "$APK_PATH" "bappa-locator-v$VERSION.apk"
+          echo "FILENAME=bappa-locator-v$VERSION.apk" >> $GITHUB_OUTPUT
 
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version_calc.outputs.VERSION }}
-          name: Release ${{ steps.version_calc.outputs.VERSION }}
-          body: "Automated signed APK release for Bappa Locator ${{ steps.version_calc.outputs.VERSION }}."
+          tag_name: ${{ steps.release_info.outputs.VERSION }}
+          name: Release ${{ steps.release_info.outputs.VERSION }}
+          body: "Automated signed APK release for Bappa Locator ${{ steps.release_info.outputs.VERSION }}."
           draft: false
           prerelease: false
-          files: |
-            bappa-locator-${{ steps.version_calc.outputs.VERSION }}.apk
-            version.json
+          files: ${{ steps.release_info.outputs.FILENAME }}
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

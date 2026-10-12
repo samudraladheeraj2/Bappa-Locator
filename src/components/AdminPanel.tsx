@@ -94,6 +94,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [activeMainTab, setActiveMainTab] = useState<'pandals' | 'annadanam' | 'photo_updates'>('pandals');
   const [statusTab, setStatusTab] = useState<'pending' | 'approved' | 'rejected'>('pending');
+  const [festivalFilter, setFestivalFilter] = useState<'all' | 'ganesh' | 'durga'>('all');
 
   const [pandals, setPandals] = useState<any[]>([]);
   const [duplicateComparisonTarget, setDuplicateComparisonTarget] = useState<{
@@ -1008,8 +1009,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     }
   });
 
-  const currentPandals = pandals.filter((p) => p.status === statusTab);
-  const currentAnnadanam = annadanamList.filter((a) => a.status === statusTab);
+  const currentPandals = pandals.filter((p) => {
+    if (p.status !== statusTab) return false;
+    if (festivalFilter === 'durga') return p.festivalType === 'durga';
+    if (festivalFilter === 'ganesh') return p.festivalType !== 'durga';
+    return true;
+  });
+
+  const currentAnnadanam = annadanamList.filter((a) => {
+    if (a.status !== statusTab) return false;
+    if (festivalFilter === 'durga') return a.festivalType === 'durga';
+    if (festivalFilter === 'ganesh') return a.festivalType !== 'durga';
+    return true;
+  });
 
   if (!isAdmin) {
     return (
@@ -1154,35 +1166,74 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             </button>
           </div>
 
-          {/* Status Sub-Tabs (Shown for Pandals and Annadanam) */}
+          {/* Status Sub-Tabs & Festival Filter (Shown for Pandals and Annadanam) */}
           {activeMainTab !== 'photo_updates' && (
-            <div className="flex border-b border-gray-200 bg-gray-50 px-4 pt-2">
-              {(['pending', 'approved', 'rejected'] as const).map((tab) => {
-                const count =
-                  activeMainTab === 'pandals'
-                    ? pandals.filter((p) => p.status === tab).length
-                    : annadanamList.filter((a) => a.status === tab).length;
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => setStatusTab(tab)}
-                    className={`px-4 py-2.5 text-xs font-semibold capitalize border-b-2 transition-all flex items-center space-x-1.5 ${
-                      statusTab === tab
-                        ? 'border-amber-700 text-amber-900 bg-white shadow-xs rounded-t-lg'
-                        : 'border-transparent text-gray-500 hover:text-gray-800'
-                    }`}
-                  >
-                    <span>{tab}</span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        statusTab === tab ? 'bg-amber-100 text-amber-900' : 'bg-gray-200 text-gray-600'
+            <div className="flex flex-wrap items-center justify-between border-b border-gray-200 bg-gray-50 px-4 pt-2 gap-2">
+              <div className="flex items-center">
+                {(['pending', 'approved', 'rejected'] as const).map((tab) => {
+                  const count =
+                    activeMainTab === 'pandals'
+                      ? pandals.filter((p) => p.status === tab).length
+                      : annadanamList.filter((a) => a.status === tab).length;
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setStatusTab(tab)}
+                      className={`px-4 py-2.5 text-xs font-semibold capitalize border-b-2 transition-all flex items-center space-x-1.5 ${
+                        statusTab === tab
+                          ? 'border-amber-700 text-amber-900 bg-white shadow-xs rounded-t-lg'
+                          : 'border-transparent text-gray-500 hover:text-gray-800'
                       }`}
                     >
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
+                      <span>{tab}</span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          statusTab === tab ? 'bg-amber-100 text-amber-900' : 'bg-gray-200 text-gray-600'
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Festival Filter Capsule for Admin */}
+              <div className="flex items-center bg-gray-200/80 p-0.5 rounded-xl border border-gray-300 text-xs mb-1">
+                <button
+                  type="button"
+                  onClick={() => setFestivalFilter('all')}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                    festivalFilter === 'all'
+                      ? 'bg-white text-gray-900 shadow-xs'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFestivalFilter('ganesh')}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                    festivalFilter === 'ganesh'
+                      ? 'bg-amber-500 text-amber-950 shadow-xs'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  🐘 Ganesh
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFestivalFilter('durga')}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                    festivalFilter === 'durga'
+                      ? 'bg-rose-600 text-white shadow-xs'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  🌺 Durga
+                </button>
+              </div>
             </div>
           )}
 

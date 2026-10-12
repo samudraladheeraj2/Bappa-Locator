@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search, X, ArrowUpDown, Heart } from 'lucide-react';
+import { FestivalType } from '../types';
 
 interface SearchFilterProps {
   searchQuery: string;
@@ -12,6 +13,7 @@ interface SearchFilterProps {
   showFavoritesOnly: boolean;
   onFavoritesToggle: () => void;
   favoritesCount: number;
+  festivalType?: FestivalType;
 }
 
 export const SearchFilter: React.FC<SearchFilterProps> = React.memo(({
@@ -25,19 +27,34 @@ export const SearchFilter: React.FC<SearchFilterProps> = React.memo(({
   showFavoritesOnly,
   onFavoritesToggle,
   favoritesCount,
+  festivalType = 'ganesh',
 }) => {
+  const isDurga = festivalType === 'durga';
+
   return (
-    <div className="bg-white/95 backdrop-blur-md border border-amber-200/90 shadow-xl rounded-2xl px-4 py-2.5 z-40">
+    <div
+      className={`bg-white/95 backdrop-blur-md border shadow-xl rounded-2xl px-4 py-2.5 z-40 transition-colors duration-300 ${
+        isDurga ? 'border-rose-200/90' : 'border-amber-200/90'
+      }`}
+    >
       <div className="max-w-4xl mx-auto space-y-2">
         {/* Search Input */}
         <div className="relative flex items-center">
-          <Search className="absolute left-3.5 w-4 h-4 text-amber-600 pointer-events-none" />
+          <Search className={`absolute left-3.5 w-4 h-4 pointer-events-none ${isDurga ? 'text-rose-600' : 'text-amber-600'}`} />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search by pandal name, area, locality, or committee..."
-            className="w-full pl-10 pr-10 py-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all shadow-inner"
+            placeholder={
+              isDurga
+                ? 'Search by Durga pandal name, area, committee, or locality...'
+                : 'Search by pandal name, area, locality, or committee...'
+            }
+            className={`w-full pl-10 pr-10 py-2.5 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white transition-all shadow-inner border ${
+              isDurga
+                ? 'bg-rose-50/40 border-rose-200 focus:ring-rose-500'
+                : 'bg-amber-50/50 border-amber-200 focus:ring-amber-500'
+            }`}
           />
           {searchQuery && (
             <button

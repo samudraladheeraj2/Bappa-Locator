@@ -18,15 +18,18 @@ import {
   RefreshCw,
   Download,
 } from 'lucide-react';
-import { ViewMode } from '../types';
+import { ViewMode, FestivalType } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
 import { CURRENT_APP_VERSION, checkForAppUpdates } from '../utils/versionCheck';
+import { CuteDurgaMataLogo } from './CuteDurgaMataLogo';
 
 interface NavigationDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
+  festivalType?: FestivalType;
+  onFestivalTypeChange?: (type: FestivalType) => void;
   onGetLocation: () => void;
   onPandalsNearMe?: () => void;
   onAnnadanamNearMe?: () => void;
@@ -49,6 +52,8 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   onClose,
   viewMode,
   onViewModeChange,
+  festivalType = 'ganesh',
+  onFestivalTypeChange,
   onGetLocation,
   onPandalsNearMe,
   onAnnadanamNearMe,
@@ -98,33 +103,56 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
       {/* Drawer Container */}
       <div className="relative w-full max-w-xl md:max-w-2xl bg-gradient-to-b from-amber-50 via-white to-amber-50/50 h-full shadow-2xl z-10 flex flex-col overflow-hidden text-gray-900 animate-in slide-in-from-left duration-300 border-r border-amber-300/60">
         
-        {/* Drawer Header with Cute Bappa Animated Photo */}
-        <div className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 text-white p-4 sm:p-5 flex items-center justify-between border-b border-amber-700/60 shadow-md">
+        {/* Drawer Header with Cute Animated Photo */}
+        <div
+          className={`text-white p-4 sm:p-5 flex items-center justify-between border-b shadow-md ${
+            festivalType === 'durga'
+              ? 'bg-gradient-to-r from-red-950 via-rose-900 to-amber-950 border-rose-700/60'
+              : 'bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 border-amber-700/60'
+          }`}
+        >
           <div className="flex items-center gap-3">
-            <img
-              src="/app-icon.png"
-              alt="Cute Bappa Animated Icon"
-              className="w-12 h-12 rounded-2xl object-cover border-2 border-amber-300 shadow-md shadow-amber-950/50 shrink-0"
-              referrerPolicy="no-referrer"
-            />
+            {festivalType === 'durga' ? (
+              <CuteDurgaMataLogo size="lg" showBadge={true} />
+            ) : (
+              <div className="relative group">
+                <img
+                  src="/app-icon.png"
+                  alt="Cute Bappa Animated Icon"
+                  className="w-12 h-12 rounded-2xl object-cover border-2 border-amber-300 shadow-md shadow-amber-950/50 shrink-0"
+                  referrerPolicy="no-referrer"
+                />
+                <span className="absolute -bottom-1 -right-1 text-[9px] bg-amber-950 text-yellow-300 font-black px-1 rounded-md border border-amber-500/80">
+                  🚩
+                </span>
+              </div>
+            )}
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg sm:text-xl font-black text-yellow-100 tracking-tight flex items-center gap-1.5">
-                  Bappa Locator 🚩
+                  Pandal Hopper {festivalType === 'durga' ? '🌺' : '🚩'}
                 </h2>
-                <span className="text-[10px] bg-amber-950/80 text-yellow-300 font-extrabold px-2 py-0.5 rounded-full border border-amber-600/40">
+                <span
+                  className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                    festivalType === 'durga'
+                      ? 'bg-rose-950 text-rose-200 border-rose-600/40'
+                      : 'bg-amber-950/80 text-yellow-300 border-amber-600/40'
+                  }`}
+                >
                   Hyderabad
                 </span>
               </div>
               <p className="text-xs text-amber-200 font-medium">
-                Ganesh Pandals, Live Darshan & Annadanam
+                {festivalType === 'durga'
+                  ? 'Durga Puja Pandals, Bhog & Darshan'
+                  : 'Ganesh Pandals, Live Darshan & Annadanam'}
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-amber-950/60 hover:bg-amber-700 text-amber-200 hover:text-white transition-colors cursor-pointer border border-amber-700/50"
+            className="p-2 rounded-xl bg-black/40 hover:bg-black/60 text-amber-200 hover:text-white transition-colors cursor-pointer border border-white/10"
             title="Close menu"
           >
             <X className="w-5 h-5" />
@@ -133,6 +161,40 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
 
         {/* Scrollable Content Body with 2-Column Responsive Layout */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+          {/* Festival Switcher Capsule in Drawer */}
+          {onFestivalTypeChange && (
+            <div className="p-3 bg-gradient-to-r from-amber-100/90 to-rose-100/90 border border-amber-300 rounded-2xl space-y-2">
+              <span className="text-[11px] font-extrabold text-gray-700 uppercase tracking-wider block">
+                Choose Festival
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => onFestivalTypeChange('ganesh')}
+                  className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+                    festivalType === 'ganesh'
+                      ? 'bg-amber-500 text-amber-950 shadow font-extrabold ring-2 ring-amber-400'
+                      : 'bg-white text-gray-700 hover:bg-amber-50 border border-amber-200'
+                  }`}
+                >
+                  <span>🐘</span>
+                  <span>Ganesh Pandals</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onFestivalTypeChange('durga')}
+                  className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+                    festivalType === 'durga'
+                      ? 'bg-rose-600 text-white shadow font-extrabold ring-2 ring-rose-400'
+                      : 'bg-white text-gray-700 hover:bg-rose-50 border border-rose-200'
+                  }`}
+                >
+                  <span>🌺</span>
+                  <span>Durga Pandals</span>
+                </button>
+              </div>
+            </div>
+          )}
           
           {/* Quick System Badge Bar (Clean, No Release Info) */}
           <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-amber-100/70 border border-amber-300/80 rounded-2xl text-xs">
@@ -442,11 +504,13 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
 
           <div>
             <p className="text-xs font-extrabold text-amber-950 flex items-center justify-center gap-1.5">
-              <span>🙏 Ganpati Bappa Morya!</span>
-              <span>🚩</span>
+              <span>{festivalType === 'durga' ? '🙏 Jai Mata Di! Shubho Durga Puja!' : '🙏 Ganpati Bappa Morya!'}</span>
+              <span>{festivalType === 'durga' ? '🌺' : '🚩'}</span>
             </p>
             <p className="text-[10px] text-amber-800/80 mt-0.5">
-              Community-driven Ganesh Mandapam & Annadanam Finder for Hyderabad
+              {festivalType === 'durga'
+                ? 'Community-driven Durga Puja Mandap & Maha Bhog Finder for Hyderabad'
+                : 'Community-driven Ganesh Mandapam & Annadanam Finder for Hyderabad'}
             </p>
           </div>
         </div>
