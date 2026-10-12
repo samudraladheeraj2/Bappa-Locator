@@ -1229,14 +1229,14 @@ export const NewSubmissionForm: React.FC<NewSubmissionFormProps> = ({
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-sm font-extrabold text-amber-950 flex items-center gap-2">
-                          <span>🚩</span>
-                          <span>Image of Lord Ganesha (Idol / Murti) *</span>
+                          <span>{festivalType === 'durga' ? '🌺' : '🚩'}</span>
+                          <span>{festivalType === 'durga' ? 'Image of Maa Durga (Idol / Murti) *' : 'Image of Lord Ganesha (Idol / Murti) *'}</span>
                           <span className="bg-amber-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
                             Cover Photo
                           </span>
                         </h3>
                         <p className="text-xs text-amber-900/80 mt-0.5">
-                          Main picture of Lord Ganesh displayed on cards, map pins & search results.
+                          {festivalType === 'durga' ? 'Main picture of Maa Durga displayed on cards, map pins & search results.' : 'Main picture of Lord Ganesh displayed on cards, map pins & search results.'}
                         </p>
                       </div>
 
@@ -1276,7 +1276,7 @@ export const NewSubmissionForm: React.FC<NewSubmissionFormProps> = ({
                       <div className="relative w-full h-56 rounded-2xl overflow-hidden border-2 border-amber-400 group shadow-md bg-black/5">
                         <img
                           src={ganeshaPhoto}
-                          alt="Lord Ganesha Idol Cover Preview"
+                          alt={festivalType === 'durga' ? 'Maa Durga Idol Cover Preview' : 'Lord Ganesha Idol Cover Preview'}
                           className="w-full h-full object-cover"
                         />
                         {/* Hover Overlay for Desktop */}
@@ -1360,7 +1360,7 @@ export const NewSubmissionForm: React.FC<NewSubmissionFormProps> = ({
                         </div>
 
                         <div className="absolute top-2 left-2 bg-amber-900/90 text-yellow-300 text-[10px] font-extrabold px-2.5 py-1 rounded-md shadow flex items-center gap-1">
-                          <span>🚩 Cover Photo: Lord Ganesha Idol</span>
+                          <span>{festivalType === 'durga' ? '🌺 Cover Photo: Maa Durga Idol' : '🚩 Cover Photo: Lord Ganesha Idol'}</span>
                         </div>
                       </div>
                     ) : (
@@ -1376,7 +1376,7 @@ export const NewSubmissionForm: React.FC<NewSubmissionFormProps> = ({
                           <div className="flex flex-col items-center py-4">
                             <Loader2 className="w-8 h-8 text-amber-700 animate-spin" />
                             <span className="text-xs font-medium text-amber-800 mt-2">
-                              Uploading Ganesha picture…
+                              {festivalType === 'durga' ? 'Uploading Durga picture…' : 'Uploading Ganesha picture…'}
                             </span>
                           </div>
                         ) : (
@@ -1390,10 +1390,10 @@ export const NewSubmissionForm: React.FC<NewSubmissionFormProps> = ({
                               </div>
                             </div>
                             <span className="text-sm font-bold text-amber-950">
-                              Upload Lord Ganesha Idol Photo
+                              {festivalType === 'durga' ? 'Upload Maa Durga Idol Photo' : 'Upload Lord Ganesha Idol Photo'}
                             </span>
                             <p className="text-xs text-gray-500 mt-1 mb-3.5 max-w-xs">
-                              Snap Lord Ganesh at the pandal or choose a clear idol photo from gallery.
+                              {festivalType === 'durga' ? 'Snap Maa Durga at the pandal or choose a clear idol photo from gallery.' : 'Snap Lord Ganesh at the pandal or choose a clear idol photo from gallery.'}
                             </p>
                             <div className="flex items-center justify-center gap-2.5 w-full max-w-xs">
                               <button

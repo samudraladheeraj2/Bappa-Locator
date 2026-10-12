@@ -115,7 +115,7 @@ export const VisitorPandalNotification: React.FC<VisitorPandalNotificationProps>
 
               <h4 className="font-bold text-base text-white line-clamp-1">{pandal.name}</h4>
               <p className="text-xs text-amber-100/90 mt-1 leading-snug">
-                The <strong>{CURRENT_FESTIVAL_YEAR} Lord Ganesha idol photo</strong> is not updated yet. Help devotees by sharing a photo!
+                The <strong>{CURRENT_FESTIVAL_YEAR} {pandal.festivalType === 'durga' ? 'Maa Durga' : 'Lord Ganesha'} idol photo</strong> is not updated yet. Help devotees by sharing a photo!
               </p>
 
               <div className="mt-3 flex items-center gap-2">

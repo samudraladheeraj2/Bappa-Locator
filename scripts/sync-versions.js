@@ -58,13 +58,17 @@ function syncVersions() {
     let gradleContent = fs.readFileSync(gradlePath, 'utf8');
     gradleContent = gradleContent.replace(/versionCode\s+\d+/, `versionCode ${versionCode}`);
     gradleContent = gradleContent.replace(/versionName\s+["'][^"']+["']/, `versionName "${version}"`);
-    // Ensure consistent applicationId
+    // Ensure consistent applicationId and namespace
     gradleContent = gradleContent.replace(
       /applicationId\s+["'][^"']+["']/,
       `applicationId "com.bappalocator.app.v2"`
     );
+    gradleContent = gradleContent.replace(
+      /namespace\s+["'][^"']+["']/,
+      `namespace "com.bappalocator.app.v2"`
+    );
     fs.writeFileSync(gradlePath, gradleContent);
-    console.log(`[SyncVersions] Updated android/app/build.gradle (versionCode: ${versionCode}, versionName: "${version}", appId: com.bappalocator.app.v2)`);
+    console.log(`[SyncVersions] Updated android/app/build.gradle (versionCode: ${versionCode}, versionName: "${version}", appId & namespace: com.bappalocator.app.v2)`);
   }
 
   // 5. Ensure capacitor.config.ts has consistent appId

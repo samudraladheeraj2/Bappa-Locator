@@ -108,7 +108,7 @@ export const NearbyVisitorNotification: React.FC<NearbyVisitorNotificationProps>
             </h4>
 
             <p className="text-[11px] text-amber-200/90 leading-tight">
-              Help devotees by uploading the <strong>{currentYear} Lord Ganesha idol photo</strong> for this mandapam.
+              Help devotees by uploading the <strong>{currentYear} {pandal.festivalType === 'durga' ? 'Maa Durga' : 'Lord Ganesha'} idol photo</strong> for this mandapam.
             </p>
 
             <div className="pt-2 flex items-center gap-2">

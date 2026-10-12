@@ -226,9 +226,9 @@ export const UpdateIdolModal: React.FC<UpdateIdolModalProps> = ({
       }
 
       if (isAdmin) {
-        setSuccessMessage(`Ganpati Bappa Morya! Fresh ${currentYear} Idol photo approved and live.`);
+        setSuccessMessage(pandal.festivalType === 'durga' ? `Jai Mata Di! Fresh ${currentYear} Maa Durga Idol photo approved and live.` : `Ganpati Bappa Morya! Fresh ${currentYear} Idol photo approved and live.`);
       } else {
-        setSuccessMessage(`Thank you! Your ${currentYear} Lord Ganesha idol photo has been submitted and is pending admin verification before going live.`);
+        setSuccessMessage(pandal.festivalType === 'durga' ? `Thank you! Your ${currentYear} Maa Durga idol photo has been submitted and is pending admin verification before going live.` : `Thank you! Your ${currentYear} Lord Ganesha idol photo has been submitted and is pending admin verification before going live.`);
       }
       onSuccess(updatedPandal);
 
@@ -306,7 +306,7 @@ export const UpdateIdolModal: React.FC<UpdateIdolModalProps> = ({
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-amber-950 text-xs flex items-center gap-1.5">
                       <Camera className="w-4 h-4 text-amber-700" />
-                      <span>Lord Ganesha Idol Photo ({currentYear})</span>
+                      <span>{pandal.festivalType === 'durga' ? 'Maa Durga Idol Photo' : 'Lord Ganesha Idol Photo'} ({currentYear})</span>
                     </span>
                     <span className="bg-amber-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">
                       Live Darshan
