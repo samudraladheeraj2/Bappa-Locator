@@ -11,10 +11,15 @@ export const ADMIN_EMAIL = 'samudraladheeraj2@gmail.com';
  * Ensures that the Admin user document exists in Firestore with phone number 7702583629
  * and hashed PIN 0796. If not present, creates it automatically.
  */
+let adminDocVerified = false;
+
 export async function ensureAdminExists(): Promise<boolean> {
+  if (adminDocVerified) {
+    return true;
+  }
   console.log(`[AdminInit] Verifying Admin doc (${ADMIN_MOBILE}) in Firestore...`);
   try {
-    return await withTimeout(
+    const success = await withTimeout(
       (async () => {
         const userRef = doc(db, 'users', ADMIN_MOBILE);
         const userSnap = await getDoc(userRef);
@@ -31,6 +36,7 @@ export async function ensureAdminExists(): Promise<boolean> {
             createdAt: new Date().toISOString(),
           });
           console.log(`[AdminInit SUCCESS] Admin ID (${ADMIN_MOBILE}) created in Firestore.`);
+          adminDocVerified = true;
           return true;
         } else {
           const data = userSnap.data();
@@ -51,12 +57,14 @@ export async function ensureAdminExists(): Promise<boolean> {
           } else {
             console.log(`[AdminInit SUCCESS] Admin ID (${ADMIN_MOBILE}) already up to date.`);
           }
+          adminDocVerified = true;
           return true;
         }
       })(),
-      5000,
-      'Admin Firestore verification timed out after 5s'
+      12000,
+      'Admin Firestore verification timed out after 12s'
     );
+    return Boolean(success);
   } catch (err) {
     console.warn('[AdminInit NOTICE] Firestore Admin sync notice (non-fatal):', err);
     return false;

@@ -79,9 +79,8 @@ jobs:
 
       - name: Build Android Release APK
         run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease
+          chmod +x android/gradlew
+          android/gradlew -p android assembleRelease
 
       - name: Extract Version & Rename Signed APK
         id: release_info

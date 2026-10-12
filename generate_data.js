@@ -1,4 +1,4 @@
-const fs = require('fs');
+import fs from 'fs';
 
 async function generate() {
   const res = await fetch('https://bappa-seva.vercel.app/api/pandals');
@@ -12,12 +12,17 @@ async function generate() {
     if (parts.length > 1) {
       area = parts[1].trim();
     }
+    const replaceGanesh = (str) => {
+      if (!str) return str;
+      return str.replace(/Ganesh/gi, 'Durga Mata').replace(/Vinayak/gi, 'Durga Mata');
+    };
+
     return {
       id: p.id || 'bs_' + idx,
       sourceId: p.id || '',
-      name: p.name || 'Ganesh Pandal',
-      committeeName: p.organizer_name || p.name || '',
-      organizerName: p.organizer_name || '',
+      name: replaceGanesh(p.name) || 'Durga Mata Pandal',
+      committeeName: replaceGanesh(p.organizer_name || p.name) || '',
+      organizerName: replaceGanesh(p.organizer_name) || '',
       address: p.address || 'Hyderabad',
       area: area,
       city: 'Hyderabad',
@@ -25,7 +30,7 @@ async function generate() {
       latitude: Number(p.lat) || 17.3850,
       longitude: Number(p.lng) || 78.4867,
       timings: p.timing_text || '6:00 AM - 11:00 PM',
-      description: p.description || 'Ganesh pandal registered via BappaSeva.',
+      description: replaceGanesh(p.description) || 'Durga Mata pandal registered via BappaSeva.',
       image: p.image_url || 'https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&w=800&q=80',
       extraImages: p.extra_image_urls || [],
       contactInfo: p.contact_phone || '',

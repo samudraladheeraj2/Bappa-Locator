@@ -167,7 +167,7 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
 
   const openCamera = () => {
     setShowSourcePicker(false);
-    setShowLiveCamera(true);
+    cameraInputRef.current?.click();
   };
 
   const openGallery = () => {

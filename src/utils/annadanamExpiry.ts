@@ -8,8 +8,9 @@
  * - The day after tomorrow and beyond, it is considered expired and automatically removed from the database.
  */
 
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
+import { checkIsAdminUser } from './adminInit';
 
 /**
  * Checks whether an Annadanam record has expired (> 1 day after event date / creation date)
@@ -111,8 +112,9 @@ export async function cleanupExpiredAnnadanam(records: any[]): Promise<string[]>
     if (isExpired) {
       deletedIds.push(item.id);
 
-      // Trigger deletion from Firestore if not pure local demo item
-      if (typeof item.id === 'string' && !item.id.startsWith('bs_')) {
+      // Trigger deletion from Firestore only if user has admin privileges
+      const canDeleteFromFirestore = checkIsAdminUser(auth.currentUser);
+      if (canDeleteFromFirestore && typeof item.id === 'string' && !item.id.startsWith('bs_')) {
         deletePromises.push(
           deleteDoc(doc(db, 'annadanam', item.id)).catch((err) => {
             console.warn(`Could not delete expired Annadanam ${item.id}:`, err);

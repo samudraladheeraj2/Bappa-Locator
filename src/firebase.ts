@@ -17,23 +17,38 @@ import {
   CACHE_SIZE_UNLIMITED,
 } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import firebaseAppletConfig from '../firebase-applet-config.json';
 import env from './config/env';
 
 const firebaseConfig = {
-  apiKey: env.FIREBASE_API_KEY,
-  projectId: env.FIREBASE_PROJECT_ID,
-  appId: env.FIREBASE_APP_ID,
-  authDomain: env.FIREBASE_AUTH_DOMAIN,
-  storageBucket: env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID,
+  apiKey: firebaseAppletConfig.apiKey || env.FIREBASE_API_KEY,
+  projectId: firebaseAppletConfig.projectId || env.FIREBASE_PROJECT_ID,
+  appId: firebaseAppletConfig.appId || env.FIREBASE_APP_ID,
+  authDomain: firebaseAppletConfig.authDomain || env.FIREBASE_AUTH_DOMAIN,
+  storageBucket: firebaseAppletConfig.storageBucket || env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: firebaseAppletConfig.messagingSenderId || env.FIREBASE_MESSAGING_SENDER_ID,
 };
 
 const app = initializeApp(firebaseConfig);
 
+// Critical: Use the exact provisioned database ID from firebase-applet-config.json
+const targetDatabaseId =
+  (firebaseAppletConfig.firestoreDatabaseId && firebaseAppletConfig.firestoreDatabaseId.trim() !== '' && firebaseAppletConfig.firestoreDatabaseId !== '(default)')
+    ? firebaseAppletConfig.firestoreDatabaseId.trim()
+    : (env.FIREBASE_DATABASE_ID && env.FIREBASE_DATABASE_ID.trim() !== '' && env.FIREBASE_DATABASE_ID !== '(default)'
+        ? env.FIREBASE_DATABASE_ID.trim()
+        : 'ai-studio-bappalocator-3f3c0518-c821-44fe-84bf-aa228b12ee54');
+
 // Enable robust Firestore connection with long-polling fallback for iframe/web
-export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-}, env.FIREBASE_DATABASE_ID);
+export const db = (() => {
+  try {
+    return initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+    }, targetDatabaseId);
+  } catch {
+    return getFirestore(app, targetDatabaseId);
+  }
+})();
 
 export const auth = getAuth(app);
 export const storage = getStorage(app);

@@ -37,13 +37,26 @@ const getEnvVar = (viteKey: string, processKey: string, fallback: string = ''): 
 
 export const env = {
   // Firebase Credentials
-  FIREBASE_API_KEY: getEnvVar('VITE_FIREBASE_API_KEY', 'FIREBASE_API_KEY', firebaseAppletConfig.apiKey || 'dummy-firebase-api-key'),
-  FIREBASE_PROJECT_ID: getEnvVar('VITE_FIREBASE_PROJECT_ID', 'FIREBASE_PROJECT_ID', firebaseAppletConfig.projectId || 'ai-studio-bappalocator-3f3c0518-c821-44fe-84bf-aa228b12ee54'),
-  FIREBASE_APP_ID: getEnvVar('VITE_FIREBASE_APP_ID', 'FIREBASE_APP_ID', firebaseAppletConfig.appId || '1:556597604247:web:b4fbcda8df3509b1dd9ed2'),
-  FIREBASE_AUTH_DOMAIN: getEnvVar('VITE_FIREBASE_AUTH_DOMAIN', 'FIREBASE_AUTH_DOMAIN', firebaseAppletConfig.authDomain || 'glossy-topic-380115.firebaseapp.com'),
-  FIREBASE_DATABASE_ID: getEnvVar('VITE_FIREBASE_DATABASE_ID', 'FIREBASE_DATABASE_ID', firebaseAppletConfig.firestoreDatabaseId || 'ai-studio-bappalocator-3f3c0518-c821-44fe-84bf-aa228b12ee54'),
-  FIREBASE_STORAGE_BUCKET: getEnvVar('VITE_FIREBASE_STORAGE_BUCKET', 'FIREBASE_STORAGE_BUCKET', firebaseAppletConfig.storageBucket || 'glossy-topic-380115.firebasestorage.app'),
-  FIREBASE_MESSAGING_SENDER_ID: getEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID', 'FIREBASE_MESSAGING_SENDER_ID', firebaseAppletConfig.messagingSenderId || '556597604247'),
+  // When firebaseAppletConfig provides a valid provisioned database or keys, prefer them over generic defaults
+  FIREBASE_API_KEY: (firebaseAppletConfig.apiKey && firebaseAppletConfig.apiKey !== 'dummy-firebase-api-key')
+    ? firebaseAppletConfig.apiKey
+    : getEnvVar('VITE_FIREBASE_API_KEY', 'FIREBASE_API_KEY', 'AIzaSyAdDFuGh_GAuvH-MSG9o3obLvGmFQ6aDR4'),
+  FIREBASE_PROJECT_ID: firebaseAppletConfig.projectId || getEnvVar('VITE_FIREBASE_PROJECT_ID', 'FIREBASE_PROJECT_ID', 'glossy-topic-380115'),
+  FIREBASE_APP_ID: firebaseAppletConfig.appId || getEnvVar('VITE_FIREBASE_APP_ID', 'FIREBASE_APP_ID', '1:556597604247:web:b4fbcda8df3509b1dd9ed2'),
+  FIREBASE_AUTH_DOMAIN: firebaseAppletConfig.authDomain || getEnvVar('VITE_FIREBASE_AUTH_DOMAIN', 'FIREBASE_AUTH_DOMAIN', 'glossy-topic-380115.firebaseapp.com'),
+  FIREBASE_DATABASE_ID: (() => {
+    const configId = firebaseAppletConfig.firestoreDatabaseId;
+    if (configId && configId.trim() !== '' && configId !== '(default)') {
+      return configId.trim();
+    }
+    const envVal = getEnvVar('VITE_FIREBASE_DATABASE_ID', 'FIREBASE_DATABASE_ID', '');
+    if (envVal && envVal.trim() !== '' && envVal !== '(default)') {
+      return envVal.trim();
+    }
+    return 'ai-studio-bappalocator-3f3c0518-c821-44fe-84bf-aa228b12ee54';
+  })(),
+  FIREBASE_STORAGE_BUCKET: firebaseAppletConfig.storageBucket || getEnvVar('VITE_FIREBASE_STORAGE_BUCKET', 'FIREBASE_STORAGE_BUCKET', 'glossy-topic-380115.firebasestorage.app'),
+  FIREBASE_MESSAGING_SENDER_ID: firebaseAppletConfig.messagingSenderId || getEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID', 'FIREBASE_MESSAGING_SENDER_ID', '556597604247'),
 
   // Google Maps Platform Key
   GOOGLE_MAPS_API_KEY: getEnvVar('VITE_GOOGLE_MAPS_API_KEY', 'GOOGLE_MAPS_API_KEY', ''),

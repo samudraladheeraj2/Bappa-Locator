@@ -30,7 +30,12 @@ export default function App() {
       const saved = localStorage.getItem('pandal_hopper_festival_type');
       if (saved === 'durga' || saved === 'ganesh') return saved;
     } catch (e) {}
-    return 'ganesh';
+    
+    // Calendar-based default: October is Durga, otherwise Ganesh (after July)
+    const month = new Date().getMonth();
+    if (month === 9) return 'durga'; // October
+    if (month >= 7) return 'ganesh'; // Aug, Sep, Nov, Dec
+    return 'ganesh'; // Default
   });
 
   const [pandals, setPandals] = useState<Pandal[]>(() => {

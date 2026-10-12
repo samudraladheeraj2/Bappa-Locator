@@ -1,11 +1,17 @@
 import { Annadanam } from '../types';
 
+const getRelativeDate = (offsetDays: number = 0): string => {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().split('T')[0];
+};
+
 export const ANNADANAM_DATA: Annadanam[] = [
   {
     id: 'anna-1',
     sourceId: 'bs_anna_1',
     pandalName: 'Khairatabad Ganesh Utsav Samiti',
-    date: '2026-09-25',
+    date: getRelativeDate(0), // Today
     startTime: '12:00 PM',
     endTime: '4:00 PM',
     address: 'Near Metro Station, Khairatabad, Hyderabad',
@@ -24,7 +30,7 @@ export const ANNADANAM_DATA: Annadanam[] = [
     id: 'anna-2',
     sourceId: 'bs_anna_2',
     pandalName: 'Balapur Ganesh Mandal',
-    date: '2026-09-26',
+    date: getRelativeDate(0), // Today
     startTime: '1:00 PM',
     endTime: '5:00 PM',
     address: 'Main Road, Balapur, Hyderabad',
@@ -43,7 +49,7 @@ export const ANNADANAM_DATA: Annadanam[] = [
     id: 'anna-3',
     sourceId: 'bs_anna_3',
     pandalName: 'Durgam Cheruvu Lake View Ganpati',
-    date: '2026-09-27',
+    date: getRelativeDate(1), // Tomorrow
     startTime: '12:30 PM',
     endTime: '3:30 PM',
     address: 'Secretariat Colony, Madhapur, Hyderabad',
@@ -62,7 +68,7 @@ export const ANNADANAM_DATA: Annadanam[] = [
     id: 'anna-4',
     sourceId: 'bs_anna_4',
     pandalName: 'Ameerpet Sarvajanik Ganesh Mandal',
-    date: '2026-09-28',
+    date: getRelativeDate(1), // Tomorrow
     startTime: '12:00 PM',
     endTime: '3:00 PM',
     address: 'Main Road, Near Mythrivanam, Ameerpet, Hyderabad',
@@ -81,7 +87,7 @@ export const ANNADANAM_DATA: Annadanam[] = [
     id: 'anna-5',
     sourceId: 'bs_anna_5',
     pandalName: 'KPHB 6th Phase Ganesh Utsav Mandal',
-    date: '2026-09-29',
+    date: getRelativeDate(2),
     startTime: '1:00 PM',
     endTime: '4:00 PM',
     address: 'KPHB Colony, 6th Phase, Kukatpally, Hyderabad',
@@ -100,7 +106,7 @@ export const ANNADANAM_DATA: Annadanam[] = [
     id: 'anna-6',
     sourceId: 'bs_anna_6',
     pandalName: 'Himayatnagar Friends Union Ganpati',
-    date: '2026-09-30',
+    date: getRelativeDate(3),
     startTime: '12:30 PM',
     endTime: '3:30 PM',
     address: 'Street No. 5, Himayatnagar, Hyderabad',
@@ -119,7 +125,7 @@ export const ANNADANAM_DATA: Annadanam[] = [
     id: 'anna-7',
     sourceId: 'bs_anna_7',
     pandalName: 'Secunderabad Railway Station Ganpati',
-    date: '2026-10-01',
+    date: getRelativeDate(4),
     startTime: '11:30 AM',
     endTime: '2:30 PM',
     address: 'Near Railway Station, Secunderabad, Hyderabad',
@@ -138,7 +144,7 @@ export const ANNADANAM_DATA: Annadanam[] = [
     id: 'anna-8',
     sourceId: 'bs_anna_8',
     pandalName: 'Jubilee Hills Cultural Society Ganpati',
-    date: '2026-10-02',
+    date: getRelativeDate(5),
     startTime: '1:00 PM',
     endTime: '4:00 PM',
     address: 'Road No. 36, Jubilee Hills, Hyderabad',

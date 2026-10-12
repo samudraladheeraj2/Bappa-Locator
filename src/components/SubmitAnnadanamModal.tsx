@@ -144,8 +144,8 @@ export const SubmitAnnadanamModal: React.FC<SubmitAnnadanamModalProps> = ({
     setErrorMsg(null);
 
     // 1. Mandatory Validation: Pandal Name
-    if (!pandalName.trim()) {
-      setErrorMsg('Pandal / Temple name is mandatory. Please enter a name.');
+    if (!pandalName.trim() || pandalName.trim().length < 2) {
+      setErrorMsg('Pandal / Temple name must be at least 2 characters.');
       return;
     }
 
@@ -156,8 +156,8 @@ export const SubmitAnnadanamModal: React.FC<SubmitAnnadanamModalProps> = ({
     }
 
     // 3. Mandatory Validation: Location (Address and coordinates)
-    if (!address.trim()) {
-      setErrorMsg('Location / Address is mandatory. Please enter an address or choose a location on the map.');
+    if (!address.trim() || address.trim().length < 5) {
+      setErrorMsg('Location / Address must be at least 5 characters. Please enter a full address or choose a location on the map.');
       return;
     }
 
@@ -176,7 +176,7 @@ export const SubmitAnnadanamModal: React.FC<SubmitAnnadanamModalProps> = ({
         startTime: startTime.trim() || '12:00 PM',
         endTime: endTime.trim() || '',
         address: address.trim(),
-        area: area.trim() || 'Hyderabad',
+        area: area.trim().length >= 2 ? area.trim() : 'Hyderabad',
         city: city || 'Hyderabad',
         latitude,
         longitude,
