@@ -1,0 +1,32 @@
+{
+  "id": "/",
+  "name": "Pandal Hopper - Ganesh & Durga Pandals",
+  "short_name": "PandalHopper",
+  "description": "Discover Ganesh and Durga Puja pandals, Annadanam timings, and immersion schedules with offline map support.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#78350f",
+  "background_color": "#fffbeb",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
