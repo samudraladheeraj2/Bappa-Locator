@@ -5,8 +5,8 @@ const config: CapacitorConfig = {
   appName: 'Pandal Hopper',
   webDir: 'dist',
   server: {
-    androidScheme: 'https',
-    cleartext: false,
+    androidScheme: 'http',
+    cleartext: true,
   },
   plugins: {
     SplashScreen: {
