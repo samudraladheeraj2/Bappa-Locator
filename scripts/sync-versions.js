@@ -82,6 +82,76 @@ function syncVersions() {
     }
   }
 
+  // 6. Ensure Android resource files exist and are complete (prevent AAPT resource linking errors in CI)
+  const resValuesDir = path.join(rootDir, 'android', 'app', 'src', 'main', 'res', 'values');
+  const resXmlDir = path.join(rootDir, 'android', 'app', 'src', 'main', 'res', 'xml');
+  fs.mkdirSync(resValuesDir, { recursive: true });
+  fs.mkdirSync(resXmlDir, { recursive: true });
+
+  const stringsXmlPath = path.join(resValuesDir, 'strings.xml');
+  if (!fs.existsSync(stringsXmlPath)) {
+    fs.writeFileSync(stringsXmlPath, `<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bappa Locator</string>
+    <string name="title_activity_main">Bappa Locator</string>
+    <string name="package_name">com.bappalocator.app.v2</string>
+    <string name="custom_url_scheme">com.bappalocator.app.v2</string>
+</resources>
+`);
+    console.log(`[SyncVersions] Created missing android/app/src/main/res/values/strings.xml`);
+  }
+
+  const stylesXmlPath = path.join(resValuesDir, 'styles.xml');
+  if (!fs.existsSync(stylesXmlPath)) {
+    fs.writeFileSync(stylesXmlPath, `<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowBackground">@color/colorPrimary</item>
+    </style>
+    <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash</item>
+    </style>
+</resources>
+`);
+    console.log(`[SyncVersions] Created missing android/app/src/main/res/values/styles.xml`);
+  }
+
+  const colorsXmlPath = path.join(resValuesDir, 'colors.xml');
+  if (!fs.existsSync(colorsXmlPath)) {
+    fs.writeFileSync(colorsXmlPath, `<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#78350f</color>
+    <color name="colorPrimaryDark">#451a03</color>
+    <color name="colorAccent">#d97706</color>
+</resources>
+`);
+    console.log(`[SyncVersions] Created missing android/app/src/main/res/values/colors.xml`);
+  }
+
+  const filePathsXmlPath = path.join(resXmlDir, 'file_paths.xml');
+  if (!fs.existsSync(filePathsXmlPath)) {
+    fs.writeFileSync(filePathsXmlPath, `<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path name="external_files" path="." />
+    <external-files-path name="external_file_path" path="." />
+    <files-path name="internal_file_path" path="." />
+    <cache-path name="internal_cache_path" path="." />
+    <external-cache-path name="external_cache_path" path="." />
+</paths>
+`);
+    console.log(`[SyncVersions] Created missing android/app/src/main/res/xml/file_paths.xml`);
+  }
+
   console.log('[SyncVersions] All versions and package attributes synchronized successfully!');
 }
 
