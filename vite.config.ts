@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import {defineConfig} from 'vite';
+import { defineConfig } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,6 +11,10 @@ const __dirname = path.dirname(__filename);
 export default defineConfig(() => {
   return {
     base: './',
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+    },
     plugins: [
       react(),
       tailwindcss(),
@@ -19,9 +23,9 @@ export default defineConfig(() => {
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
         manifest: {
           id: '/',
-          name: 'Hyderabad Bappa Pandal Locator',
-          short_name: 'Bappa Locator',
-          description: 'Locate Ganesh Pandals, Annadanam timings, and Nimajjanam schedules offline in Hyderabad.',
+          name: 'Pandal Hopper - Ganesh & Durga Pandals',
+          short_name: 'Pandal Hopper',
+          description: 'Discover Ganesh and Durga Puja pandals, Annadanam timings, and immersion schedules with offline map support.',
           theme_color: '#78350f',
           background_color: '#fffbeb',
           display: 'standalone',
@@ -135,10 +139,7 @@ export default defineConfig(() => {
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };

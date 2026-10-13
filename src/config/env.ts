@@ -5,7 +5,6 @@ import firebaseAppletConfig from '../../firebase-applet-config.json';
  * Reads environment variables from import.meta.env (Vite), process.env (Node/CI),
  * or falls back to firebase-applet-config.json / safe defaults.
  */
-
 const getEnvVar = (viteKey: string, processKey: string, fallback: string = ''): string => {
   // 1. Check Vite import.meta.env
   try {
@@ -41,9 +40,13 @@ export const env = {
   FIREBASE_API_KEY: (firebaseAppletConfig.apiKey && firebaseAppletConfig.apiKey !== 'dummy-firebase-api-key')
     ? firebaseAppletConfig.apiKey
     : getEnvVar('VITE_FIREBASE_API_KEY', 'FIREBASE_API_KEY', 'AIzaSyAdDFuGh_GAuvH-MSG9o3obLvGmFQ6aDR4'),
+
   FIREBASE_PROJECT_ID: firebaseAppletConfig.projectId || getEnvVar('VITE_FIREBASE_PROJECT_ID', 'FIREBASE_PROJECT_ID', 'glossy-topic-380115'),
+
   FIREBASE_APP_ID: firebaseAppletConfig.appId || getEnvVar('VITE_FIREBASE_APP_ID', 'FIREBASE_APP_ID', '1:556597604247:web:b4fbcda8df3509b1dd9ed2'),
+
   FIREBASE_AUTH_DOMAIN: firebaseAppletConfig.authDomain || getEnvVar('VITE_FIREBASE_AUTH_DOMAIN', 'FIREBASE_AUTH_DOMAIN', 'glossy-topic-380115.firebaseapp.com'),
+
   FIREBASE_DATABASE_ID: (() => {
     const configId = firebaseAppletConfig.firestoreDatabaseId;
     if (configId && configId.trim() !== '' && configId !== '(default)') {
@@ -55,7 +58,9 @@ export const env = {
     }
     return 'ai-studio-bappalocator-3f3c0518-c821-44fe-84bf-aa228b12ee54';
   })(),
+
   FIREBASE_STORAGE_BUCKET: firebaseAppletConfig.storageBucket || getEnvVar('VITE_FIREBASE_STORAGE_BUCKET', 'FIREBASE_STORAGE_BUCKET', 'glossy-topic-380115.firebasestorage.app'),
+
   FIREBASE_MESSAGING_SENDER_ID: firebaseAppletConfig.messagingSenderId || getEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID', 'FIREBASE_MESSAGING_SENDER_ID', '556597604247'),
 
   // Google Maps Platform Key
@@ -65,7 +70,7 @@ export const env = {
   GEMINI_API_KEY: getEnvVar('VITE_GEMINI_API_KEY', 'GEMINI_API_KEY', ''),
 
   // Application Settings
-  APP_URL: getEnvVar('VITE_APP_URL', 'APP_URL', 'https://bappa-locator.app'),
+  APP_URL: getEnvVar('VITE_APP_URL', 'APP_URL', 'https://pandalhopper.app'),
   MODE: getEnvVar('MODE', 'NODE_ENV', 'production'),
   IS_DEV: typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.DEV : false,
   IS_PROD: typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.PROD : true,

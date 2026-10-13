@@ -14,13 +14,11 @@ export const AndroidInAppUpdateChecker: React.FC = () => {
         setShowPromptModal(true);
       }
     };
-
     checkVersion();
   }, []);
 
   const handleDownloadAndInstall = () => {
     if (!updateInfo || !updateInfo.apkUrl) return;
-
     // Trigger direct download of new APK file URL
     window.open(updateInfo.apkUrl, '_blank', 'noopener,noreferrer');
   };
@@ -91,7 +89,6 @@ export const AndroidInAppUpdateChecker: React.FC = () => {
               Later
             </button>
           )}
-
           <button
             type="button"
             onClick={handleDownloadAndInstall}
@@ -105,7 +102,7 @@ export const AndroidInAppUpdateChecker: React.FC = () => {
 
         <div className="text-center pt-1">
           <a
-            href="https://github.com/samudraladheeraj2/Bappa-Locator/releases"
+            href="https://github.com/samudraladheeraj2/Pandal-Hopper/releases"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[11px] text-amber-800 hover:text-amber-950 font-bold underline inline-flex items-center gap-1"

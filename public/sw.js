@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bappa-locator-shell-v1';
+const CACHE_NAME = 'pandal-hopper-shell-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -31,7 +31,6 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
@@ -43,7 +42,6 @@ self.addEventListener('fetch', (event) => {
         }).catch(() => {});
         return cachedResponse;
       }
-
       return fetch(event.request).catch(() => {
         if (event.request.headers.get('accept')?.includes('text/html')) {
           return caches.match('/index.html');

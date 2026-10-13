@@ -1,4 +1,4 @@
-# Bappa Locator — Mobile App Build & Capacitor Setup Guide
+# Pandal Hopper — Mobile App Build & Capacitor Setup Guide
 
 This project includes Capacitor setup for cross-platform native iOS & Android application deployment.
 
@@ -45,7 +45,7 @@ An automated workflow is configured at `.github/workflows/build-apk.yml`:
 
 ## 📋 Capacitor Configuration Summary
 
-- **App Name**: Bappa Locator
-- **App ID**: `com.bappalocator.app.v2`
+- **App Name**: Pandal Hopper
+- **App ID**: `com.pandalhopper.app`
 - **Web Directory**: `dist`
 - **Config File**: `capacitor.config.ts`

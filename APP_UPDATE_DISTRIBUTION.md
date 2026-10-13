@@ -1,61 +1,45 @@
-# Bappa Locator — Mobile App Update & Distribution Guide
+# Pandal Hopper — Mobile App Update & Distribution Guide
 
-This guide explains how to push app updates to users who have installed Bappa Locator on their Android smartphones or PWA desktop/mobile devices.
+This guide explains how updates work and how release APKs are automatically built and published for Android smartphones.
 
 ---
 
-## 📱 Option 1: Automatic In-App APK Update Popup (Built-In)
+## 📱 Automatic In-App APK Updates (Built-In)
 
 Your app features an automated **In-App Update Checker** (`src/components/AndroidInAppUpdateChecker.tsx`).
 
 ### How It Works:
-1. Every time a user opens the Bappa Locator app on their mobile phone, the app silently fetches `version.json` from your GitHub repository or web host.
-2. If `latestVersion` in `version.json` is newer than `CURRENT_APP_VERSION` (e.g. `1.1.0` > `1.0.0`), a popup modal automatically appears on the user's screen:
+1. Every time a user opens the Pandal Hopper app on their mobile phone, the app checks `version.json` from your GitHub repository (`samudraladheeraj2/Pandal-Hopper`).
+2. If `latestVersion` in `version.json` is newer than `CURRENT_APP_VERSION` (e.g. `1.2.6` > `1.2.5`), a popup modal appears automatically on the user's screen:
    - **Title**: *Android App Update Available!*
-   - **Badge**: *v1.1.0 Available*
-   - **Release Notes**: Highlights what's new.
+   - **Badge**: *v1.2.6 Available*
+   - **Release Notes**: Highlights the latest changes.
    - **Action**: *Download & Install APK*
-3. Tapping **Download & Install APK** downloads the new `.apk` file directly to their device and opens the native Android package installer.
+3. Tapping **Download & Install APK** downloads the new `.apk` file directly to their device.
 
-### Steps to Trigger an Update for All Users:
-
-1. **Update `version.json`**:
-   Simply increment `latestVersion` (e.g. `"1.2.6"`) and `versionCode` (e.g. `10`) in root `version.json`:
+### How to Release a New Version to Users:
+1. **Increment Version**:
+   In `version.json`, bump `latestVersion` (e.g. `"1.2.7"`) and `versionCode` (e.g. `11`):
    ```json
    {
-     "latestVersion": "1.2.6",
-     "versionCode": 10,
-     "apkUrl": "https://github.com/samudraladheeraj2/Bappa-Locator/releases/download/v1.2.6/bappa-locator-v1.2.6.apk",
-     "releaseNotes": "Highlight your new features or bug fixes here!",
+     "latestVersion": "1.2.7",
+     "versionCode": 11,
+     "apkUrl": "https://github.com/samudraladheeraj2/Pandal-Hopper/releases/download/v1.2.7/pandal-hopper-v1.2.7.apk",
+     "releaseNotes": "Performance improvements and new pandal listings.",
      "forceUpdate": false
    }
    ```
-
-2. **Automatic Package & Version Synchronization**:
-   - `scripts/sync-versions.js` automatically propagates the version to `package.json`, `public/version.json`, `src/utils/versionCheck.ts`, `capacitor.config.ts`, and `android/app/build.gradle`.
-   - The signing keystore is permanently embedded in `android/app/release.keystore`, ensuring every generated APK uses the exact same digital certificate. **Users can update smoothly without any "Package conflicts with an existing package" or packaging errors!**
-
+2. **Build and Sync**:
+   `node scripts/sync-versions.js` automatically propagates the new version across `package.json`, `public/version.json`, `src/utils/versionCheck.ts`, and `android/app/build.gradle`.
 3. **Push to GitHub**:
-   - Pushing your changes to `main` automatically triggers `.github/workflows/build-apk.yml`.
-   - The signed APK is compiled and published as a GitHub Release under tag `v1.2.6`.
-   - All installed apps on user phones will automatically detect the new version on their next app launch and prompt them to update!
+   - Pushing your changes automatically triggers `.github/workflows/build-apk.yml`.
+   - The workflow runs `./gradlew clean` and compiles a clean, signed release APK.
+   - The new APK is published directly as a GitHub Release (under tag `v1.2.7`) AND uploaded as a downloadable GitHub Actions artifact for immediate access.
+   - Devotees opening the app will automatically get the prompt to download the new version!
 
 ---
 
-## ⚡ Option 2: Over-The-Air (OTA) Web Bundle Updates (`@capgo/capacitor-updater`)
-
-For frontend, styling, or bug-fix updates that do not require new native Android permissions:
-
-1. `@capgo/capacitor-updater` is already installed and configured in `src/components/AppUpdaterNotifier.tsx`.
-2. When a web update bundle is published via Capgo CLI (`npx @capgo/cli@latest upload`), the app automatically notifies the user on startup:
-   - *"A new version of the app is ready. Tap Update to apply."*
-3. Tapping **Update** downloads the bundle and reloads the app in 2 seconds without requiring an APK re-install!
-
----
-
-## 🌐 Option 3: PWA (Progressive Web App) Auto-Update
-
-For users who installed the app directly from Chrome/Edge/Safari (via **"Add to Home Screen"** or **"Install App"**):
-
-1. The Service Worker (`sw.js`) automatically checks for new assets on every app launch.
-2. Newly compiled JS/CSS bundles (`dist/`) are cached in the background, updating the PWA seamlessly.
+## 🌐 Progressive Web App (PWA) Updates
+For users visiting the web app or those who added it to their home screen via browser:
+- Service Worker caching updates seamlessly in web browsers.
+- On native Android APK runs, Service Worker caching is cleanly bypassed to ensure fast, zero-conflict WebView loading directly from local native assets.

@@ -1,19 +1,18 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.bappalocator.app.v2',
-  appName: 'Bappa Locator',
+  appId: 'com.pandalhopper.app',
+  appName: 'Pandal Hopper',
   webDir: 'dist',
   server: {
     androidScheme: 'https',
-    cleartext: false,
+    cleartext: true,
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 2000,
+      launchShowDuration: 1500,
       backgroundColor: '#78350f',
       showSpinner: false,
-      androidSpinnerStyle: 'small',
       splashFullScreen: true,
       splashImmersive: true,
     },

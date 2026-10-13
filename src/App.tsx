@@ -15,7 +15,6 @@ import { SubmitAnnadanamModal } from './components/SubmitAnnadanamModal';
 import { AdminPanel } from './components/AdminPanel';
 import { UserProfileModal } from './components/UserProfileModal';
 import { VisitorPandalNotification } from './components/VisitorPandalNotification';
-import { AppUpdaterNotifier } from './components/AppUpdaterNotifier';
 import { AndroidInAppUpdateChecker } from './components/AndroidInAppUpdateChecker';
 import { NavigationDrawer } from './components/NavigationDrawer';
 import { calculateDistance } from './utils/geo';
@@ -622,7 +621,6 @@ export default function App() {
       />
 
       {/* Capgo Over-the-Air Live Web Bundle App Updater */}
-      <AppUpdaterNotifier />
 
       {/* Android In-App APK Update Checker */}
       <AndroidInAppUpdateChecker />

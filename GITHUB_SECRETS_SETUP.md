@@ -1,6 +1,6 @@
-# Bappa Locator — GitHub Secrets Setup Guide
+# Pandal Hopper — GitHub Secrets Setup Guide
 
-This guide details how to configure GitHub Repository Secrets to automatically build and deploy Bappa Locator across Web, PWA, and Android without committing secret API keys to the source repository.
+This guide details how to configure GitHub Repository Secrets to automatically build and deploy Pandal Hopper across Web, PWA, and Android without committing secret API keys to the source repository.
 
 ---
 
