@@ -1,0 +1,7 @@
+{
+  "latestVersion": "1.2.5",
+  "versionCode": 9,
+  "apkUrl": "https://github.com/samudraladheeraj2/Pandal-Hopper/releases/download/v1.2.5/pandal-hopper-v1.2.5.apk",
+  "releaseNotes": "Optimized Android startup reliability, fixed service worker caching conflicts, and updated all branding to Pandal Hopper.",
+  "forceUpdate": false
+}
