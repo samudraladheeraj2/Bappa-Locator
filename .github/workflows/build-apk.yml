@@ -41,7 +41,7 @@ jobs:
       - name: Sync Web Assets to Capacitor Android
         run: |
           if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
-            npx cap init "Bappa Locator" "com.bappalocator.app.v2" --web-dir dist
+            npx cap init "Pandal Hopper" "com.pandalhopper.app" --web-dir dist
           fi
           if [ ! -d "android" ]; then
             npx cap add android
@@ -66,13 +66,13 @@ jobs:
             echo "Generating consistent release keystore..."
             keytool -genkeypair -v \
               -keystore android/app/release.keystore \
-              -alias bappalocator \
+              -alias pandalhopper \
               -keyalg RSA \
               -keysize 2048 \
               -validity 10000 \
-              -storepass BappaLocatorSecretPassword123! \
-              -keypass BappaLocatorSecretPassword123! \
-              -dname "CN=BappaLocator, OU=App, O=BappaLocator, L=Hyderabad, S=Telangana, C=IN"
+              -storepass PandalHopperSecretPassword123! \
+              -keypass PandalHopperSecretPassword123! \
+              -dname "CN=PandalHopper, OU=App, O=PandalHopper, L=Hyderabad, S=Telangana, C=IN"
           fi
           # Strictly synchronize version, versionCode and appId across all project manifests
           node scripts/sync-versions.js
@@ -95,15 +95,15 @@ jobs:
             APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
           fi
           echo "Found signed APK at: $APK_PATH"
-          cp "$APK_PATH" "bappa-locator-v$VERSION.apk"
-          echo "FILENAME=bappa-locator-v$VERSION.apk" >> $GITHUB_OUTPUT
+          cp "$APK_PATH" "pandal-hopper-v$VERSION.apk"
+          echo "FILENAME=pandal-hopper-v$VERSION.apk" >> $GITHUB_OUTPUT
 
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.release_info.outputs.VERSION }}
           name: Release ${{ steps.release_info.outputs.VERSION }}
-          body: "Automated signed APK release for Bappa Locator ${{ steps.release_info.outputs.VERSION }}."
+          body: "Automated signed APK release for Pandal Hopper ${{ steps.release_info.outputs.VERSION }}."
           draft: false
           prerelease: false
           files: ${{ steps.release_info.outputs.FILENAME }}

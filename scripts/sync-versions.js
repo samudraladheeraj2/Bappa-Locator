@@ -61,24 +61,24 @@ function syncVersions() {
     // Ensure consistent applicationId and namespace
     gradleContent = gradleContent.replace(
       /applicationId\s+["'][^"']+["']/,
-      `applicationId "com.bappalocator.app.v2"`
+      `applicationId "com.pandalhopper.app"`
     );
     gradleContent = gradleContent.replace(
       /namespace\s+["'][^"']+["']/,
-      `namespace "com.bappalocator.app.v2"`
+      `namespace "com.pandalhopper.app"`
     );
     fs.writeFileSync(gradlePath, gradleContent);
-    console.log(`[SyncVersions] Updated android/app/build.gradle (versionCode: ${versionCode}, versionName: "${version}", appId & namespace: com.bappalocator.app.v2)`);
+    console.log(`[SyncVersions] Updated android/app/build.gradle (versionCode: ${versionCode}, versionName: "${version}", appId & namespace: com.pandalhopper.app)`);
   }
 
   // 5. Ensure capacitor.config.ts has consistent appId
   const capConfigPath = path.join(rootDir, 'capacitor.config.ts');
   if (fs.existsSync(capConfigPath)) {
     let capContent = fs.readFileSync(capConfigPath, 'utf8');
-    if (!capContent.includes("appId: 'com.bappalocator.app.v2'")) {
-      capContent = capContent.replace(/appId:\s*['"][^'"]+['']/, "appId: 'com.bappalocator.app.v2'");
+    if (!capContent.includes("appId: 'com.pandalhopper.app'")) {
+      capContent = capContent.replace(/appId:\s*['"][^'"]+['']/, "appId: 'com.pandalhopper.app'");
       fs.writeFileSync(capConfigPath, capContent);
-      console.log(`[SyncVersions] Verified capacitor.config.ts appId -> com.bappalocator.app.v2`);
+      console.log(`[SyncVersions] Verified capacitor.config.ts appId -> com.pandalhopper.app`);
     }
   }
 
@@ -92,10 +92,10 @@ function syncVersions() {
   if (!fs.existsSync(stringsXmlPath)) {
     fs.writeFileSync(stringsXmlPath, `<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Bappa Locator</string>
-    <string name="title_activity_main">Bappa Locator</string>
-    <string name="package_name">com.bappalocator.app.v2</string>
-    <string name="custom_url_scheme">com.bappalocator.app.v2</string>
+    <string name="app_name">Pandal Hopper</string>
+    <string name="title_activity_main">Pandal Hopper</string>
+    <string name="package_name">com.pandalhopper.app</string>
+    <string name="custom_url_scheme">com.pandalhopper.app</string>
 </resources>
 `);
     console.log(`[SyncVersions] Created missing android/app/src/main/res/values/strings.xml`);
@@ -150,6 +150,20 @@ function syncVersions() {
 </paths>
 `);
     console.log(`[SyncVersions] Created missing android/app/src/main/res/xml/file_paths.xml`);
+  }
+
+  // 7. Ensure MainActivity.java exists
+  const mainActivityDir = path.join(rootDir, 'android', 'app', 'src', 'main', 'java', 'com', 'pandalhopper', 'app');
+  fs.mkdirSync(mainActivityDir, { recursive: true });
+  const mainActivityPath = path.join(mainActivityDir, 'MainActivity.java');
+  if (!fs.existsSync(mainActivityPath)) {
+    fs.writeFileSync(mainActivityPath, `package com.pandalhopper.app;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}
+`);
+    console.log(`[SyncVersions] Created missing android/app/src/main/java/com/pandalhopper/app/MainActivity.java`);
   }
 
   console.log('[SyncVersions] All versions and package attributes synchronized successfully!');

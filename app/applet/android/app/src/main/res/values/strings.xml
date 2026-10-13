@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Bappa Locator</string>
-    <string name="title_activity_main">Bappa Locator</string>
-    <string name="package_name">com.bappalocator.app.v2</string>
-    <string name="custom_url_scheme">com.bappalocator.app.v2</string>
+    <string name="app_name">Pandal Hopper</string>
+    <string name="title_activity_main">Pandal Hopper</string>
+    <string name="package_name">com.pandalhopper.app</string>
+    <string name="custom_url_scheme">com.pandalhopper.app</string>
 </resources>
