@@ -66,12 +66,12 @@ jobs:
             echo "Generating consistent release keystore..."
             keytool -genkeypair -v \
               -keystore android/app/release.keystore \
-              -alias pandalhopper \
+              -alias bappalocator \
               -keyalg RSA \
               -keysize 2048 \
               -validity 10000 \
-              -storepass PandalHopperSecretPassword123! \
-              -keypass PandalHopperSecretPassword123! \
+              -storepass BappaLocatorSecretPassword123! \
+              -keypass BappaLocatorSecretPassword123! \
               -dname "CN=PandalHopper, OU=App, O=PandalHopper, L=Hyderabad, S=Telangana, C=IN"
           fi
           # Strictly synchronize version, versionCode and appId across all project manifests

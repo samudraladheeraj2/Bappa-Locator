@@ -20,9 +20,9 @@ android {
         release {
             if (file("release.keystore").exists()) {
                 storeFile file("release.keystore")
-                storePassword "PandalHopperSecretPassword123!"
-                keyAlias "pandalhopper"
-                keyPassword "PandalHopperSecretPassword123!"
+                storePassword "BappaLocatorSecretPassword123!"
+                keyAlias "bappalocator"
+                keyPassword "BappaLocatorSecretPassword123!"
                 storeType "PKCS12"
             }
         }
@@ -66,8 +66,7 @@ dependencies {
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
-    implementation project(':capacitor-cordova-android-plugins')
-}
+    implementation project(':capacitor-cordova-android-plugins')}
 
 apply from: 'capacitor.build.gradle'
 
